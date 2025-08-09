@@ -1,0 +1,12 @@
+[
+  {
+    "username": "akun1",
+    "owner": "6281234567890",
+    "type": "ssh"
+  },
+  {
+    "username": "akun2",
+    "owner": "6281234567890",
+    "type": "vmess"
+  }
+]
