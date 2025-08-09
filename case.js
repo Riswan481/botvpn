@@ -736,34 +736,30 @@ case 'ceratevpn': {
 }
 break;
 case 'menu': {
-  const poter = "```" + `
+  const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━
+✨PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━
-   PANEL BOT VPN PREMIUM
-━━━━━━━━━━━━━━━━━━━━━━
-📡 Layanan VPN premium:
-📌 • SERVER ID & SG
-━━━━━━━━━━━━━━━━━━━━━━
-• .ssh    → user 30 500 2
-• .vless  → user 30 500 2
-• .vmess  → user 30 500 2
-• .trojan → user 30 500 2
+🟢 .ssh    → user 30 500 2
+🔵 .vless  → user 30 500 2
+🟣 .vmess  → user 30 500 2
+🔴 .trojan → user 30 500 2
 
 📌 Format Perintah:
-📌 .ssh risvpn 30 500 2
-• user → nama pengguna
-• 30   → masa aktif (hari)
-• 500  → Limit kuota (GB)
-• 2    → maksimal IP login
+🧩 .ssh risvpn 30 500 2
+👤 user → nama pengguna
+🗓️ 30   → masa aktif (hari)
+📦 500  → limit kuota (GB)
+🌐 2    → maksimal IP login
 ━━━━━━━━━━━━━━━━━━━━━━
-🧩 Menu Tambahan:
-• .allmenu → lihat semua
+🧭 Menu Tambahan:
+📚 .allmenu → lihat semua
 ━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
-• .addvps
-• .addreseller
-• .risetlimit
-• .hapusreseller
-• .listreseller
+🛠️ .addvps
+👥 .addreseller
+♻️ .risetlimit
+🗑️ .hapusreseller
+📋 .listreseller
 
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━` + "```";
