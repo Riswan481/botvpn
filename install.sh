@@ -2,40 +2,30 @@
 
 echo "=== Instalasi BotVPN ==="
 
-# Update sistem
+# Minta nomor owner
+read -p "Masukkan nomor owner/admin (format: 628xxxx): " OWNER_NUMBER
+
+# Update & install paket dasar
 apt update && apt upgrade -y
+apt install -y nodejs npm git
 
-# Install Node.js & npm (versi LTS terbaru)
-echo "[*] Menginstall Node.js..."
-apt install -y nodejs npm
-
-# Cek versi Node.js
-node -v
-npm -v
-
-# Install PM2 untuk menjalankan bot di background
-echo "[*] Menginstall PM2..."
+# Install PM2
 npm install -g pm2
 
-# Clone repo jika belum ada
-if [ ! -d "botvpn" ]; then
-    echo "[*] Clone repository..."
-    git clone https://github.com/Riswan481/botvpn.git
+# Masuk ke folder bot
+cd "$(dirname "$0")" || exit
+
+# Edit settings.js untuk set owner
+if grep -q "global.owner" settings.js; then
+    sed -i "s/global\.owner\s*=.*/global.owner = ['$OWNER_NUMBER']/g" settings.js
+else
+    echo "global.owner = ['$OWNER_NUMBER']" >> settings.js
 fi
 
-cd botvpn || exit
-
 # Install dependencies
-echo "[*] Menginstall dependencies..."
 npm install
 
-# Jalankan bot pertama kali
-echo "[*] Menjalankan bot..."
-pm2 start index.js --name botvpn
-
-# Auto start saat reboot
-pm2 startup
-pm2 save
-
-echo "=== Instalasi selesai! ==="
-echo "Gunakan 'pm2 logs botvpn' untuk melihat log."
+# Jalankan bot untuk login nomor bot
+echo "=== Sekarang login nomor bot WhatsApp ==="
+echo "Scan QR atau masukkan pairing code yang muncul"
+node index.js
