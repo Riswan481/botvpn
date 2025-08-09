@@ -31,6 +31,10 @@ const {
   fromBuffer
 } = require('file-type')
 
+const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e'
+const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  // Contoh: zone untuk example.com
+const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
+// Konfigurasi SSH untuk VPS Anda
 
 const vpsFile = path.join(__dirname, 'vps.json');
 let sshConfig = {
@@ -651,7 +655,87 @@ ${chalk.cyan('🧩 Command  :')} ${chalk.redBright(command)}
       m.reply('tes')
     }
     break    
-  case 'menu': {
+case 'allmenu':
+case 'ceratevpn': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
+
+  const uptime = () => {
+    let totalSeconds = parseInt(process.uptime());
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
+
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm') + ' WIB';
+
+  let teks = "```" + `
+👥 WELCOME TO RISWAN STORE
+👋 Hai @${m.sender.replace(/[^0-9]/g, '')}
+📅 ${hari}, ${tanggal}
+🕘 Pukul: ${jam}
+⚡ Bot Aktif: ${uptime()}
+
+👑 MENU UTAMA
+✦ .pay             ➜ Pembayaran
+✦ .login           ➜ Login Akun
+✦ .addreseller     ➜ Tambah User
+✦ .hapusreseller   ➜ Hapus User
+✦ .rekber          ➜ Jasa Rekber
+✦ .listreseller    ➜ Lihat User
+✦ .risetlimit      ➜ Riset Akun
+✦ .proses          ➜ Proses Paket
+✦ .listvpn         ➜ Harga VPN
+✦ .pointing        ➜ Add Domain
+✦ .listdomain      ➜ List Domain
+✦ .hapusdomain     ➜ Hapus Domain
+✦ .addsc           ➜ Tambah Script
+✦ .listsc          ➜ List Script
+✦ .getsc           ➜ Ambil Script
+✦ .addvps          ➜ Tambah VPS
+✦ .hapusvps        ➜ Hapus VPS
+✦ .listvps         ➜ Lihat VPS
+✦ .autoread        ➜ Auto Baca
+✦ .autotyping      ➜ Auto Ketik
+
+📡 BUAT AKUN
+✦ .sgws            ➜ SG WS VLESS
+✦ .sgwc            ➜ SG WC VLESS
+✦ .idws            ➜ ID WS VLESS
+✦ .idwc            ➜ ID WC VLESS
+✦ .vmess           ➜ Buat Akun
+✦ .vless           ➜ Buat Akun
+✦ .trojan          ➜ Buat Akun 
+✦ .ssh             ➜ Buat Akun 
+
+🎨 LAINNYA
+✦ .s     ➜ Buat Stiker
+✦ .hd    ➜ Gambar HD
+
+📣 PUSH MENU
+✦ .jpm         ➜ Push Pesan
+✦ .jpmhidetag  ➜ Push Tanpa Tag
+✦ .jpmfoto     ➜ Push Gambar
+
+📡 CHANNEL
+✦ .cekidch  ➜ Cek ID Channel
+✦ .addch    ➜ Tambah Channel
+✦ .delch    ➜ Hapus Channel
+✦ .listch   ➜ List Channel
+✦ .jpmch    ➜ Push via Channel
+
+📛 Riswan Bot © 2023
+` + "```";
+  await sock.sendMessage(m.chat, {
+    text: teks,
+    mentions: [m.sender]
+  }, { quoted: m });
+}
+break;
+case 'menu': {
   const poter = "```" + `
 ━━━━━━━━━━━━━━━━━━━━━━
    PANEL BOT VPN PREMIUM
@@ -675,10 +759,11 @@ ${chalk.cyan('🧩 Command  :')} ${chalk.redBright(command)}
 • .allmenu → lihat semua
 ━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
-• .listvps
 • .addvps
-• .hapusvps
-• .autoread
+• .addreseller
+• .risetlimit
+• .hapusreseller
+• .listreseller
 
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━` + "```";
@@ -693,6 +778,207 @@ break;
       m.reply(`Bot runtime: ${runtime(process.uptime())}`)
     }
     break    
+// ==========================
+// 1. PONTING DOMAIN
+// ==========================
+case 'pointing': {
+    if (!args[0]) {
+        return m.reply('❌ Format salah. Gunakan:\n```\n👉vpn|123.123.123\n```')
+    }
+
+    const [subRaw, ipRaw] = args[0].split('|')
+
+    if (!subRaw || !ipRaw) {
+        return m.reply('❌ Format salah. Gunakan:\n```\n👉vpn|123.123.123\n```')
+    }
+
+    const sub = subRaw.toLowerCase().trim()
+    const ip = ipRaw.trim()
+    const subdomain = `${sub}.pgetunnel.cloud`
+
+    // Validasi format
+    if (!/^[a-z0-9.-]+$/.test(sub)) return m.reply('❌ Format subdomain tidak valid.')
+    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) return m.reply('❌ Format IP tidak valid.')
+
+    // Cek apakah subdomain + IP sudah pernah digunakan
+    const isDuplicate = Object.values(db.data.chats).some(chat =>
+        chat.ponting &&
+        chat.ponting.subdomain === subdomain &&
+        chat.ponting.ip === ip
+    )
+
+    if (isDuplicate) {
+        return m.reply(`*Subdomain dan IP sudah pernah dipointing*
+*sebelumnya. Silakan hapus terlebih*
+*dahulu jika itu milik kamu.*`)
+    }
+
+    try {
+        // Hapus data lama (jika ada) di chat ini
+        if (db.data.chats[m.chat].ponting) {
+            delete db.data.chats[m.chat].ponting
+        }
+
+        // Update ke Cloudflare
+        await cloudflareUpdateDNS(subdomain, ip)
+
+        // Simpan ke database
+        db.data.chats[m.chat].ponting = { subdomain, ip }
+
+        m.reply(`\`\`\`
+✅ Sip! Domain berhasil dipointing
+📡 Domain: ${subdomain}
+🖥️ IP VPS: ${ip}
+
+⏳ Tunggu 1 menit ya biar 
+🌐 domainnya aktif sepenuhnya!
+\`\`\``)
+
+    } catch (e) {
+        return m.reply(`❌ Gagal update DNS: ${e.message}`)
+    }
+}
+break
+// ==========================
+// 2. UNPOINTING DOMAIN + IP (Hapus juga dari Cloudflare)
+// ==========================
+case 'hapusdomain': {
+    const domain = args[0]?.toLowerCase()
+    const ip = args[1]
+
+    // Validasi domain: harus diakhiri .pgetunnel.cloud
+    if (!domain || !/^[a-z0-9.-]+\.pgetunnel\.cloud$/i.test(domain)) {
+        return m.reply('⚠️ Format salah. gunakan:\n```\n👉vpn.pgetunnel.cloud\n\n```')
+    }
+
+    if (ip && !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
+        return m.reply('❌ Format IP tidak valid.')
+    }
+
+    let count = 0
+
+    for (const chatId in db.data.chats) {
+        const p = db.data.chats[chatId].ponting
+        if (!p) continue
+
+        const domainMatch = p.subdomain === domain
+        const ipMatch = ip ? p.ip === ip : true
+
+        if (domainMatch && ipMatch) {
+            try {
+                await cloudflareDeleteDNS(p.subdomain)
+            } catch (err) {
+                console.error(`Gagal hapus DNS dari Cloudflare: ${p.subdomain}`, err.message)
+            }
+
+            delete db.data.chats[chatId].ponting
+            count++
+        }
+    }
+
+    if (count === 0) {
+        return m.reply('ℹ️ Tidak ditemukan data pointing dengan domain dan IP tersebut.')
+    }
+
+    return m.reply(`\`\`\`
+✅ ${count} data pointing berhasil dihapus
+🌐 untuk domain ${domain}\`\`\`
+`)
+}
+break
+
+// ==========================
+// 3. LIST POINTING
+// ==========================
+case 'listdomain': {
+    if (!isOwner) return m.reply('❌ Perintah ini hanya bisa digunakan oleh admin.')
+
+    let result = ''
+    let count = 0
+
+    for (const chatId in db.data.chats) {
+        const p = db.data.chats[chatId].ponting
+        if (!p) continue
+
+        count++
+        result += `*${count}.*\n📡 Domain: ${p.subdomain}\n🖥️ IP VPS: ${p.ip}\n💬 Chat: ${chatId}\n\n`
+    }
+
+    if (count === 0) {
+        return m.reply('ℹ️ Tidak ada data Domain yang aktif saat ini.')
+    }
+
+    return m.reply(`📝 *Daftar Domain Aktif (${count}):*\n\n${result}`)
+}
+break
+case "idws":
+case "idwc":
+case "sgws":
+case "sgwc": {
+  const isGroup = m.key.remoteJid.endsWith('@g.us');
+  if (isGroup) return reply(`🚫 *Fitur ini hanya bisa digunakan di chat*`);
+
+  const allowedAdmins = ["6285888801241@s.whatsapp.net"];
+  if (!allowedAdmins.includes(sender)) return reply(`🚫 *Fitur ini untuk admin.*`);
+
+  if (!q) {
+    const contoh = command === 'idws' || command === 'idwc' ? '.idws 3 hari bug.example.com' : '.sgws 3 hari bug.example.com';
+    return reply(`📆 Masukkan masa aktif akun dan domain\n👉 Contoh: ${contoh}`);
+  }
+
+  const args = q.trim().split(/\s+/);
+  if (args.length < 2) return reply(`❌ Format tidak valid. Gunakan:\nContoh: .${command} 3 hari quiz.vidio.com`);
+
+  let timePart = args[0];
+  let domain = args.slice(2).join(" ");
+  if (/^\d+$/.test(timePart) && args[1]?.toLowerCase() === 'hari') {
+    timePart = `${timePart} hari`;
+  } else if (/^\d{2}-\d{2}-\d{4}$/.test(`${args[0]}`)) {
+    timePart = args[0];
+    domain = args[1];
+  }
+
+  const customDomain = domain || (command.startsWith("id") ? "bug.example.com" : "bug.example.com");
+
+  let expiredDate;
+  if (/^\d+\s*hari$/i.test(timePart)) {
+    const jumlahHari = parseInt(timePart);
+    const now = new Date();
+    now.setDate(now.getDate() + jumlahHari);
+    expiredDate = now.toISOString().split('T')[0];
+  } else if (/^\d{2}-\d{2}-\d{4}$/.test(timePart)) {
+    const [d, m, y] = timePart.split("-");
+    expiredDate = new Date(`${y}-${m}-${d}`).toISOString().split('T')[0];
+  } else {
+    return reply(`❌ Format tanggal tidak valid.\nContoh: *3 hari* atau *27-07-2025*`);
+  }
+
+  const isWC = command.endsWith("wc");
+  const baseHost = "violetvpn.biz.id";
+  const hostAndSNI = isWC ? `${customDomain}.${baseHost}` : baseHost;
+
+  const config = {
+    domain: customDomain,
+    path: command.startsWith("id") ? "/id-amz" : "/sg-melbi",
+    port: 443,
+    tls: "tls",
+    sni: hostAndSNI,
+    host: hostAndSNI,
+    remark: command.startsWith("id")
+      ? `ID Amazon 🇮🇩 (Exp: ${expiredDate})`
+      : `SG Melbi 🇸🇬 (Exp: ${expiredDate})`
+  };
+
+  try {
+    const cleanUuid = generateUUID();
+    const vlessLink = `vless://${cleanUuid}@${config.domain}:${config.port}?encryption=none&security=${config.tls}&type=ws&path=${encodeURIComponent(config.path)}&host=${config.host}&fp=random&sni=${config.sni}#${encodeURIComponent(config.remark)}`;
+    return reply(`${vlessLink}`);
+  } catch (error) {
+    console.error("❌ Error saat membuat UUID:", error.message || error);
+    return reply("❌ Terjadi kesalahan saat membuat konfigurasi. Coba lagi nanti.");
+  }
+}
+break;
 // ===== VPN CONFIGURATION =====
 case 'ssh':
 case 'vmess':
@@ -853,6 +1139,95 @@ ${message}*━━━━━━━━━━━━━━━━━━━━━━━
     }
 }
 break;
+
+case 'addreseller': {
+  if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
+  const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
+  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890*');
+
+  const list = loadResellers();
+  if (list.includes(target)) return m.reply('✅ Sudah menjadi reseller.');
+
+  list.push(target);
+  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+  return m.reply(`✅ Berhasil menambahkan reseller:\n${target}`);
+}
+break;
+case 'hapusreseller': {
+  if (!isOwner) return m.reply('❌ Hanya Owner!');
+  const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
+  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.hapusreseller 6281234567890*');
+
+  let list = loadResellers();
+  if (!list.includes(target)) return m.reply('❌ Nomor bukan reseller.');
+
+  list = list.filter(id => id !== target);
+  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+  resetLimit(target);
+  return m.reply(`✅ Reseller ${target} berhasil dihapus.`);
+}
+break;
+
+case 'risetlimit': {
+  if (!isOwner) return m.reply('❌ Hanya Owner!');
+  const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
+  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.risetlimit 6281234567890*');
+
+  try {
+    // 1. Hapus akun yang dibuat reseller dari database
+    const file = './reseller_accounts.json';
+    let totalDeleted = 0;
+    if (fs.existsSync(file)) {
+      const db = JSON.parse(fs.readFileSync(file));
+      const before = db.length;
+      const updatedDb = db.filter(a => a.owner !== target);
+      fs.writeFileSync(file, JSON.stringify(updatedDb, null, 2));
+      totalDeleted = before - updatedDb.length;
+    }
+
+    // 2. Reset limit
+    resetLimit(target);
+
+    // 3. Tambahkan ulang ke daftar reseller jika belum ada
+    const list = loadResellers();
+    if (!list.includes(target)) {
+      list.push(target);
+      fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+    }
+
+    return m.reply(`✅ Berhasil *reset akun reseller*:\n• Nomor: ${target}\n• Akun dihapus: ${totalDeleted}\n• Status: Ditambahkan ulang ke daftar reseller`);
+  } catch (e) {
+    console.error('❌ Gagal reset reseller:', e);
+    return m.reply('❌ Terjadi kesalahan saat reset reseller.');
+  }
+}
+break;
+case 'listreseller': {
+  if (!isOwner) return m.reply('❌ Hanya Owner!');
+  const resellerFile = './resellers.json';
+  const akunFile = './reseller_accounts.json';
+
+  try {
+    if (!fs.existsSync(resellerFile)) return m.reply('📂 Belum ada data reseller.');
+
+    const resellers = JSON.parse(fs.readFileSync(resellerFile));
+    if (resellers.length === 0) return m.reply('📂 Daftar reseller kosong.');
+
+    // Load data akun yang telah dibuat reseller
+    const akunData = fs.existsSync(akunFile) ? JSON.parse(fs.readFileSync(akunFile)) : {};
+
+    const teks = resellers.map((nomor, i) => {
+      const total = akunData[nomor]?.length || 0;
+      return `${i + 1}. ${nomor}`;
+    }).join('\n');
+
+    return m.reply(`📋 *Daftar Reseller kamu:*\n\n${teks}`);
+  } catch (e) {
+    console.error('❌ Gagal membaca reseller:', e);
+    return m.reply('❌ Terjadi kesalahan saat menampilkan reseller.');
+  }
+}
+break;
 case 'addvps': {
   if (!isOwner) return m.reply('❌ Hanya owner yang bisa menambahkan VPS.');
 
@@ -888,6 +1263,7 @@ case 'listvps': {
   return m.reply(teks);
 }
 break;
+
 case 'hapusvps': {
   if (!isOwner) return m.reply('❌ Hanya owner yang bisa menghapus VPS.');
 
@@ -902,10 +1278,374 @@ case 'hapusvps': {
 }
 break;
 
-    6
+    case 's':
+    case 'stiker':
+    case 'setiker':
+    case 'sticker': {
+      if (!quoted) return m.reply(`Kirim/kutip gambar dengan caption ${p_c}`)
+      react()
+
+      if (quoted) {
+        let msg = quoted
+        let type = Object.keys(msg)[0]
+        if (msg[type].viewOnce) {
+          let media = await downloadContentFromMessage(msg[type], type == 'imageMessage' ? 'image' : 'video')
+          let buffer = Buffer.from([])
+          for await (const chunk of media) {
+            buffer = Buffer.concat([buffer, chunk])
+          }
+          if (/video/.test(type)) {
+            if ((quoted.msg || quoted).seconds > 25) return m.reply('Maksimal 25 detik!')
+            await sock.vidToSticker(m.chat, buffer, m, {
+              packname: packname,
+              author: author
+            })
+            return
+          } else if (/image/.test(type)) {
+            await sock.imgToSticker(m.chat, buffer, m, {
+              packname: packname,
+              author: author
+            })
+            return
+          }
+        }
+      }
+
+      if (/image/.test(mime)) {
+        let media = await sock.downloadAndSaveMediaMessage(quoted, +new Date * 1)
+        await sock.imgToSticker(m.chat, media, m, {
+          packname: packname,
+          author: author
+        })
+        await fs.unlinkSync(media)
+      } else if (/video/.test(mime)) {
+        if ((quoted.msg || quoted).seconds > 25) return m.reply('Maksimal 25 detik!')
+        let media = await sock.downloadAndSaveMediaMessage(quoted, +new Date * 1)
+        await sock.vidToSticker(m.chat, media, m, {
+          packname: packname,
+          author: author
+        })
+        await fs.unlinkSync(media)
+      } else if (/sticker/.test(mime)) {
+        let media = await sock.downloadAndSaveMediaMessage(quoted, +new Date * 1)
+        await sock.sendStickerFromUrl(m.chat, media, m, {
+          packname: packname,
+          author: author
+        })
+        await fs.unlinkSync(media)
       } else m.reply(`Kirim/kutip gambar dengan caption ${p_c}`)
     }
     break
+    case 'hd':
+    case 'hdr':
+    case 'remini': {
+      if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${p_c}`)
+      react()
+
+      const {
+        upScale,
+        remini,
+        Pxpic
+      } = require('./lib/scrape')
+      const media = await sock.downloadAndSaveMediaMessage(quoted)
+
+      const hasilnya = await Pxpic(media, 'enhance')
+      if (hasilnya?.resultImageUrl) {
+        await sock.sendMessage(m.chat, {
+          image: {
+            url: hasilnya.resultImageUrl
+          },
+          caption: 'Sukses'
+        }, {
+          quoted: m
+        })
+        fs.unlinkSync(media)
+        return
+      }
+
+      if (await upScale(media, sock, m, m.chat)) {
+        fs.unlinkSync(media)
+        return
+      }
+
+      const proses = await remini(media, 'enhance')
+      if (proses) {
+        await sock.sendMessage(m.chat, {
+          image: proses,
+          caption: 'Sukses'
+        }, {
+          quoted: m
+        })
+      } else {
+        m.reply('Terjadi kesalahan')
+      }
+
+      fs.unlinkSync(media)
+    }
+    break       
+    case 'addsc':
+    case 'addscript': {
+      if (!isOwner) return onlyOwn()
+
+      const quoted = m.quoted
+      if (!quoted || quoted.mtype !== 'documentMessage') {
+        return m.reply('❗Reply dokumen script yang ingin ditambahkan!\n\nContoh: *.addsc namascript.zip*')
+      }
+
+      const filename = text?.trim() || quoted.fileName || `script-${Date.now()}.zip`
+
+      const folder = './database/script'
+      if (!fs.existsSync(folder)) fs.mkdirSync(folder, {
+        recursive: true
+      })
+
+      const media = await downloadContentFromMessage(quoted, 'document')
+      let buffer = Buffer.from([])
+      for await (const chunk of media) {
+        buffer = Buffer.concat([buffer, chunk])
+      }
+
+      const filePath = require('path').join(folder, filename)
+      require('fs').writeFileSync(filePath, buffer)
+
+      m.reply(`✅ Script berhasil ditambahkan sebagai:\n📁 ${filePath}`)
+    }
+    break
+
+    case 'listsc':
+    case 'listscript': {
+      if (!isOwner) return onlyOwn()
+      const folder = './database/script'
+      if (!fs.existsSync(folder)) return m.reply('❌ Folder script belum ada.')
+
+      const files = fs.readdirSync(folder)
+      if (files.length === 0) return m.reply('📁 Folder script kosong.')
+
+      let teks = `📜 *DAFTAR SCRIPT (${files.length})*\n\n`
+      files.forEach((file, i) => {
+        teks += `${i + 1}. ${file}\n`
+      })
+      m.reply(teks)
+    }
+    break
+
+    case 'getsc':
+    case 'getscript': {
+      if (!isOwner) return onlyOwn()
+
+      const folder = './database/script'
+      if (!fs.existsSync(folder)) return m.reply('❌ Folder script belum ada.')
+
+      const files = fs.readdirSync(folder)
+      if (files.length === 0) return m.reply('📁 Tidak ada script.')
+
+      const no = parseInt(text.trim())
+      if (isNaN(no) || no < 1 || no > files.length) return m.reply(`Masukkan nomor script yang valid!\n\nContoh: *.getsc 1*\nGunakan *.listsc* untuk melihat nomor script.`)
+
+      const filepath = path.join(folder, files[no - 1])
+      let buff = fs.readFileSync(filepath)
+
+      await sock.sendMessage(m.chat, {
+        document: buff,
+        fileName: files[no - 1],
+        mimetype: 'application/octet-stream',
+      }, {
+        quoted: m
+      })
+    }
+    break
+
+    // CASE LIST VPN
+case 'listvpn':
+case 'cerajshsusbtevpn': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
+
+  const uptime = () => {
+    let totalSeconds = parseInt(process.uptime());
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
+
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm');
+
+  const poter = "```" + `
+👤 Hai @${m.sender.replace(/[^0-9]/g, '')}
+📅 ${hari}, ${tanggal} • ${jam}
+⏱️ Uptime: ${uptime()}
+
+VPN PREMIUM - PGETUNNEL
+✓ Akses Semua Server Global
+✓ Bandwidth Tanpa Batas
+💸 Mulai Rp 8.000 / Bulan
+
+PAKET XL - Kuota Only
+• XL XUTS  : Rp 27.000
+• XL Vidio : Rp 38.000
+• XL XUTUP : Rp 43.000
+
+PAKET XL - Siap Pakai
+• XL XUTS  : Rp 30.000
+• XL Vidio : Rp 40.000
+• XL XUTUP : Rp 48.000
+
+AUTOSCRIPT FULL AKSES
+✓ Lifetime & Custom Bebas
+✓ Bisa Disewakan via IP
+💰 Rp 150.000
+Support: Ubuntu 20, Debian 10/11
+
+SCRIPT BOT VPN
+✓ WhatsApp Bot (Baileys)
+✓ Telegram Bot (VLESS, dll)
+💰 Rp 100.000
+
+JOIN RESELLER VPN
+• Harga Murah dari Member
+• Bonus Topup Otomatis via Bot
+👉 Mulai Rp 5.000
+
+HUBUNGI ADMIN
+• WA: wa.me/6285888801241
+• TG: t.me/JesVpnt
+
+INFO & RESOURCE
+• Grup     : t.me/grupvpn
+• Channel  : t.me/pgetunnel
+• VLESS CF : t.me/pgetunnel_robot
+• Script   : t.me/subdom_robot
+` + "```";
+
+  await sock.sendMessage(m.chat, {
+    text: poter,
+    mentions: [m.sender]
+  }, { quoted: m });
+}
+break;
+case 'rekber':
+case 'jasa rekber': {
+  try {
+    const moment = require('moment-timezone');
+    moment.locale('id');
+
+    // Fungsi menghitung uptime bot
+    const uptime = () => {
+      const totalSeconds = parseInt(process.uptime());
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      return `${hours} jam ${minutes} menit`;
+    };
+
+    const waktu = moment().tz('Asia/Jakarta');
+    const tanggal = waktu.format('LL');
+    const hari = waktu.format('dddd');
+    const jam = waktu.format('HH:mm');
+
+    const pesan = "```" + `
+🔒 JASA REKBER (Rekening Bersama)
+
+📆 hari ${hari}, ${tanggal}
+⏰ Jam     : ${jam}
+🔧 Aktif   : ${uptime()}
+
+💰 Biaya   : Rp 3.000
+📛 Nama    : Sandi Herlan
+📱 No dana : 0896-2993-9141
+
+📌 LANGKAH-LANGKAH:
+📩 Chat admin dulu
+💸 Kirim dana ke kami
+✅ Admin konfirmasi
+🔁 Dana diteruskan
+🔒 Transaksi aman
+
+📞 Hubungi Admin:
+👉 wa.me/6285888801241
+` + "```";
+
+    await sock.sendMessage(m.chat, {
+      image: { url: `${payment.qris}` },
+      caption: pesan
+    }, { quoted: m });
+
+  } catch (e) {
+    return m.reply('*Gagal menampilkan informasi jasa rekber!*');
+  }
+}
+break;
+case 'login': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
+
+  const uptime = () => {
+    const totalSeconds = parseInt(process.uptime());
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
+
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm');
+
+  const poter = "```" + `
+➡️ LOGIN DOR
+📅 ${hari}, ${tanggal} • ${jam}
+⚡ Aktif: ${uptime()}
+
+📶 Paket XL DOR
+🔐 Login: otp.exel.workers.dev
+📸 Kirim foto kuota via dial
+
+Cek Kuota & Stop Langganan:
+• Dial *808#
+• Pilih INFO
+• Info Kartu XL-Ku
+• Stop Langganan
+
+📤 Kirim bukti setelah stop
+🙏 Terima kasih
+` + "```";
+
+  await sock.sendMessage(m.chat, { text: poter }, { quoted: m });
+}
+break;
+
+case 'proses': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
+
+  const uptime = () => {
+    const totalSeconds = parseInt(process.uptime());
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
+
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm');
+
+  const poter = "```" + `
+➡️ PROSES DOR PAKET XL 
+📅 ${hari}, ${tanggal} • ${jam}
+⚡ Bot Aktif: ${uptime()}
+
+✅ Paket kamu sedang diproses
+🔃 Estimasi waktu ±1 jam
+
+🙏 Terima kasih atas kesabaran
+` + "```";
+
+  await sock.sendMessage(m.chat, { text: poter }, { quoted: m });
+}
+break;
 // CASE QRIS PAYMENT
 case 'pay': {
   try {
@@ -946,6 +1686,21 @@ case 'pay': {
   }
 }
 break;
+    case 'done': {
+      if (!isOwner) return onlyOwn();
+      if (!m.quoted) return m.reply('Reply pesanan yang telah di proses')
+      let tek = m.quoted ? quoted.text : quoted.text.split(args[0])[1]
+      let sukses = `
+「 *TRANSAKSI KAMU BERHASIL* 」\n
+📆 TANGGAL : @tanggal
+⌚ JAM           : @jam
+✅ STATUS     : Berhasil
+
+@user, Next order ya 🙏`
+      sock.sendTextWithMentions(m.chat, (sukses.replace('@pesanan', tek ? tek : '-').replace('@user', '@' + m.quoted.sender.split("@")[0]).replace('@jam', wibTime).replace('@tanggal', tanggal).replace('@user', '@' + m.quoted.sender.split("@")[0])), m)
+    }
+    break    
+
     case 'autoread': {
       if (!isOwner) return onlyOwn()
       if (args[0] === 'on') {
@@ -962,7 +1717,328 @@ break;
         m.reply('Perintah tidak dikenali. Gunakan "on" untuk mengaktifkan atau "off" untuk menonaktifkan.')
       }
     }
-    break    
+    break
+
+    case 'autotyping': {
+      if (!isOwner) return onlyOwn()
+      if (args[0] === 'on') {
+        if (setting.autotyping) return m.reply('Sudah diaktifkan sebelumnya')
+        setting.autotyping = true
+        fs.writeFileSync('./lib/settings.json', JSON.stringify(setting, null, 2))
+        await m.reply('Sukses mengaktifkan autotyping.')
+      } else if (args[0] === 'off') {
+        if (!setting.autotyping) return m.reply('Sudah dinonaktifkan sebelumnya')
+        setting.autotyping = false
+        fs.writeFileSync('./lib/settings.json', JSON.stringify(setting, null, 2))
+        await m.reply('Sukses menonaktifkan autotyping.')
+      } else {
+        m.reply('Perintah tidak dikenali. Gunakan "on" untuk mengaktifkan atau "off" untuk menonaktifkan.')
+      }
+    }
+    break
+    case 'cekidch':
+    case 'getidch': {
+      if (!text) return m.reply(`Kirim perintah ${prefix + command} _linkchannel_`)
+      if (!isUrl(args[0]) && !args[0].includes('whatsapp.com/channel')) return m.reply(`Harus Berupa Link Channel`)
+      let result = args[0].split('https://whatsapp.com/channel/')[1]
+      let data = await sock.newsletterMetadata("invite", result)
+      let teks = `*乂 NEWSLETTER INFO*
+
+*Name:* ${data.name}
+*Status*: ${data.state}
+*Subscribers*: ${data.subscribers}
+*Meta Verify*: ${data.verification}
+*React Emoji:* ${data.reaction_codes}
+*Id Channel:* ${data.id}
+*Description*:
+${data.description}
+
+`
+      m.reply(teks)
+    }
+    break
+
+    // Push
+
+    case 'jpm': {
+      if (!isOwner) return onlyOwn()
+      if (!isPc) return onlyPrivat()
+      react()
+      if (!text) m.reply(`Contoh: ${p_c} teks`)
+      let getGroups = await sock.groupFetchAllParticipating()
+      let groups = Object.entries(getGroups).slice(0).map(entry => entry[1])
+      let anu = groups.map(v => v.id)
+      for (let i of anu) {
+        await sleep(1500)
+        let metadat72 = await sock.groupMetadata(i)
+        let participanh = await metadat72.participants
+        let msg = generateWAMessageFromContent(i, {
+          viewOnceMessage: {
+            message: {
+              "messageContextInfo": {
+                "deviceListMetadata": {},
+                "deviceListMetadataVersion": 2
+              },
+              interactiveMessage: proto.Message.InteractiveMessage.create({
+                contextInfo: {
+                  mentionedJid: null,
+                  forwardingScore: 99999999999,
+                  isForwarded: false,
+                  forwardedNewsletterMessageInfo: {
+                    newsletterJid: chjid + '@newsletter',
+                    newsletterName: `${wm}`,
+                    serverMessageId: 145
+                  },
+                  businessMessageForwardInfo: {
+                    businessOwnerJid: sock.decodeJid(sock.user.id)
+                  },
+                },
+                body: proto.Message.InteractiveMessage.Body.create({
+                  text: text
+                }),
+                footer: proto.Message.InteractiveMessage.Footer.create({
+                  text: ``
+                }),
+                header: proto.Message.InteractiveMessage.Header.create({
+                  title: "",
+                  subtitle: "",
+                  hasMediaAttachment: false
+                }),
+                nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                  buttons: [{
+                    text: '-'
+                  }],
+                })
+              })
+            }
+          }
+        }, {})
+        await sock.relayMessage(i, msg.message, {
+          messageId: msg.key.id
+        })
+      }
+      m.reply(`Berhasil mengirim jpm hidetag ke ${anu.length} grup!`)
+    }
+    break
+
+    case 'jpmhidetag': {
+      if (!isOwner) return onlyOwn()
+      if (!isPc) return onlyPrivat()
+      react()
+      if (!text) m.reply(`Contoh: ${p_c} teks`)
+      let getGroups = await sock.groupFetchAllParticipating()
+      let groups = Object.entries(getGroups).slice(0).map(entry => entry[1])
+      let anu = groups.map(v => v.id)
+      for (let i of anu) {
+        await sleep(1500)
+        let metadat72 = await sock.groupMetadata(i)
+        let participanh = await metadat72.participants
+        let msg = generateWAMessageFromContent(i, {
+          viewOnceMessage: {
+            message: {
+              "messageContextInfo": {
+                "deviceListMetadata": {},
+                "deviceListMetadataVersion": 2
+              },
+              interactiveMessage: proto.Message.InteractiveMessage.create({
+                contextInfo: {
+                  mentionedJid: participanh.map(a => a.id),
+                  forwardingScore: 99999999999,
+                  isForwarded: false,
+                  forwardedNewsletterMessageInfo: {
+                    newsletterJid: chjid + '@newsletter',
+                    newsletterName: `${wm}`,
+                    serverMessageId: 145
+                  },
+                  businessMessageForwardInfo: {
+                    businessOwnerJid: sock.decodeJid(sock.user.id)
+                  },
+                },
+                body: proto.Message.InteractiveMessage.Body.create({
+                  text: text
+                }),
+                footer: proto.Message.InteractiveMessage.Footer.create({
+                  text: ``
+                }),
+                header: proto.Message.InteractiveMessage.Header.create({
+                  title: "",
+                  subtitle: "",
+                  hasMediaAttachment: false
+                }),
+                nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                  buttons: [{
+                    text: '-'
+                  }],
+                })
+              })
+            }
+          }
+        }, {})
+        await sock.relayMessage(i, msg.message, {
+          messageId: msg.key.id
+        })
+      }
+      m.reply(`Berhasil mengirim jpm hidetag ke ${anu.length} grup!`)
+    }
+    break
+
+    case 'jpmfoto': {
+      if (!isOwner) return onlyOwn()
+      if (!isPc) return onlyPrivat()
+      if (!isMediaa) return m.reply('Harus berupa gambar/video!')
+      if (!text) return m.reply(`Contoh: ${p_c} teks`)
+      react()
+      let getGroups = await sock.groupFetchAllParticipating()
+      let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
+      let anu = groups.map((v) => v.id)
+
+      for (let xnxx of anu) {
+        let metadat72 = await sock.groupMetadata(xnxx)
+        let participanh = await metadat72.participants
+
+        if (/image/.test(mime)) {
+          let media = await sock.downloadAndSaveMediaMessage(quoted)
+          let mem = await CatBox(media)
+          await sock.sendMessage(xnxx, {
+            image: {
+              url: mem
+            },
+            caption: `${kapital(text)}`,
+            contextInfo: {
+              mentionedJid: participanh.map(a => a.id)
+            }
+          }, {
+            quoted: m
+          })
+          await sleep(2000)
+        } else if (/video/.test(mime)) {
+          let media1 = await sock.downloadAndSaveMediaMessage(quoted)
+          let mem1 = await CatBox(media1)
+          await sock.sendMessage(xnxx, {
+            video: {
+              url: mem1
+            },
+            caption: `${kapital(text)}`,
+            contextInfo: {
+              mentionedJid: participanh.map(a => a.id)
+            }
+          }, {
+            quoted: m
+          })
+          await sleep(2000)
+        } else {
+          await sock.sendMessage(xnxx, {
+            text: `${kapital(text)}`,
+            contextInfo: {
+              mentionedJid: participanh.map(a => a.id)
+            }
+          }, {
+            quoted: m
+          })
+          await sleep(2000)
+        }
+      }
+      m.reply(`Berhasil mengirim broadcast ke ${anu.length} grup!`)
+    }
+    break
+
+    case 'addch':
+    case 'addchannel': {
+      if (!isOwner) return onlyOwn();
+      if (!args[0]) return m.reply(`Contoh: ${p_c} https://whatsapp.com/channel/123abc`);
+
+      const filePath = './database/channelid.json';
+      const ch = JSON.parse(fs.readFileSync(filePath).toString());
+
+      if (!isUrl(args[0]) || !args[0].includes('whatsapp.com/channel/'))
+        return m.reply(`Link tidak valid, harus berupa link channel WhatsApp`);
+
+      let result = args[0].split('https://whatsapp.com/channel/')[1].replace('/', '').trim();
+      let data = await sock.newsletterMetadata("invite", result);
+
+      if (!data || !data.id) return m.reply('Gagal mengambil metadata channel.');
+      if (ch.includes(data.id)) return m.reply('Channel sudah ada di daftar jpmch!');
+
+      ch.push(data.id);
+      fs.writeFileSync(filePath, JSON.stringify(ch, null, 2));
+      m.reply(`Berhasil menambahkan channel:\n• ID: ${data.id}\n• Nama: ${data.name || 'Tanpa Nama'}`);
+    }
+    break
+
+    case 'delch':
+    case 'delchannel': {
+      if (!isOwner) return onlyOwn();
+      if (!args[0]) return m.reply(`Contoh: ${p_c} 1\nGunakan .listch untuk melihat nomor channel.`);
+
+      const filePath = './database/channelid.json';
+      let ch = JSON.parse(fs.readFileSync(filePath).toString());
+
+      if (ch.length === 0) return m.reply('📂 Belum ada channel yang tersimpan.');
+
+      let index = parseInt(args[0]) - 1;
+      if (isNaN(index) || index < 0 || index >= ch.length)
+        return m.reply(`❌ Nomor tidak valid. Gunakan antara 1 sampai ${ch.length}`);
+
+      let removed = ch.splice(index, 1)[0];
+      fs.writeFileSync(filePath, JSON.stringify(ch, null, 2));
+
+      m.reply(`✅ Berhasil menghapus channel nomor ${args[0]}:\nID: ${removed}`);
+    }
+    break
+
+    case 'listch':
+    case 'listchannel': {
+      if (!isOwner) return onlyOwn()
+
+      const filePath = './database/channelid.json'
+      const ch = JSON.parse(fs.readFileSync(filePath).toString())
+
+      if (ch.length === 0) return m.reply('📂 Belum ada channel yang tersimpan.')
+
+      let teks = `📋 *Daftar Channel yang Tersimpan:*\n\n`
+
+      for (let i = 0; i < ch.length; i++) {
+        try {
+          let data = await sock.newsletterMetadata("jid", ch[i])
+          teks += `${i + 1}. ${data.name || 'Tanpa Nama'}\n   ID: ${ch[i]}\n\n`
+        } catch (err) {
+          teks += `${i + 1}. [GAGAL AMBIL DATA]\n   ID: ${ch[i]}\n\n`
+        }
+      }
+
+      teks += `Gunakan perintah *${p_c} [1]* untuk menghapus channel id 1.`
+
+      m.reply(teks.trim())
+    }
+    break
+
+    case 'jpmch':
+    case 'jpmchannel': {
+      if (!isOwner) return onlyOwn()
+      if (!text) return m.reply(`Contoh: ${p_c} Halo ini pesan broadcast ke semua channel`)
+
+      const filePath = './database/channelid.json'
+      const ch = JSON.parse(fs.readFileSync(filePath).toString())
+
+      if (ch.length == 0) return m.reply('Belum ada channel yang ditambahkan.')
+
+      let sukses = 0,
+        gagal = 0
+
+      for (let id of ch) {
+        try {
+          await sock.sendTextWithMentions(id, text, null)
+          sukses++
+          await delay(2000)
+        } catch (e) {
+          gagal++
+          console.log(`Gagal kirim ke ${id}: ${e.message}`)
+        }
+      }
+
+      m.reply(`✅ Broadcast selesai.\n🟢 Berhasil: ${sukses}\n🔴 Gagal: ${gagal}`)
+    }
+    break
 
     default:
 
