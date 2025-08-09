@@ -22,14 +22,8 @@ const { v4: uuidv4 } = require("uuid"); // Pastikan uuidv4 diimpor
 // Fungsi untuk menghasilkan UUID
 function generateUUID() {
   return uuidv4(); // Menggunakan uuidv4 dari pustaka 'uuid' untuk konsistensi
-}
-const {
-  ytdlv2
-} = require('very-nay')
+
 const ytdl = require("nouku-search")
-const {
-  fromBuffer
-} = require('file-type')
 
 const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e'
 const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  // Contoh: zone untuk example.com
