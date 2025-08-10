@@ -1,13 +1,13 @@
-# Botvpn wa Installation Guide
+Botvpn wa Installation Guide
 
 Panduan ini menjelaskan cara instalasi dan menjalankan BotVPN di server Linux (misal Ubuntu/Debian).
 
 ---
 
-## Langkah Instalasi
+Langkah Instalasi
 
 1. Update dan upgrade sistem:
-   ```bash
+```bash
    apt update && apt upgrade -y
 apt install git -y
 apt install nodejs -y
