@@ -17,17 +17,19 @@ const fetch = require('node-fetch')
 const FormData = require('form-data')
 const moment = require('moment-timezone')
 const path = require('path')
-const util = require('util')
+const util = require('util');
 const { v4: uuidv4 } = require("uuid"); // Pastikan uuidv4 diimpor
+
 // Fungsi untuk menghasilkan UUID
 function generateUUID() {
-  return uuidv4(); // Menggunakan uuidv4 dari pustaka 'uuid' untuk konsistensi
+  return uuidv4(); // Menggunakan uuidv4 dari pustaka 'uuid' untuk konsistensi
+}
 
-const ytdl = require("nouku-search")
+const ytdl = require("nouku-search");
 
-const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e'
-const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  // Contoh: zone untuk example.com
-const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
+const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e';
+const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795';  // Contoh: zone untuk example.com
+const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
 // Konfigurasi SSH untuk VPS Anda
 
 const vpsFile = path.join(__dirname, 'vps.json');
