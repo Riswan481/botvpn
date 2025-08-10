@@ -17,19 +17,23 @@ const fetch = require('node-fetch')
 const FormData = require('form-data')
 const moment = require('moment-timezone')
 const path = require('path')
-const util = require('util');
+const util = require('util')
 const { v4: uuidv4 } = require("uuid"); // Pastikan uuidv4 diimpor
-
 // Fungsi untuk menghasilkan UUID
 function generateUUID() {
-  return uuidv4(); // Menggunakan uuidv4 dari pustaka 'uuid' untuk konsistensi
+  return uuidv4(); // Menggunakan uuidv4 dari pustaka 'uuid' untuk konsistensi
 }
+const {
+  ytdlv2
+} = require('very-nay')
+const ytdl = require("nouku-search")
+const {
+  fromBuffer
+} = require('file-type')
 
-const ytdl = require("nouku-search");
-
-const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e';
-const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795';  // Contoh: zone untuk example.com
-const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4';
+const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e'
+const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  // Contoh: zone untuk example.com
+const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 // Konfigurasi SSH untuk VPS Anda
 
 const vpsFile = path.join(__dirname, 'vps.json');
@@ -668,99 +672,110 @@ case 'ceratevpn': {
   const hari = waktu.format('dddd');
   const jam = waktu.format('HH:mm') + ' WIB';
 
-  let teks = "```" + `
-👥 WELCOME TO RISWAN STORE
+  let teks = "```" + `👥 WELCOME TO RISWAN STORE
 👋 Hai @${m.sender.replace(/[^0-9]/g, '')}
 📅 ${hari}, ${tanggal}
 🕘 Pukul: ${jam}
 ⚡ Bot Aktif: ${uptime()}
 
 👑 MENU UTAMA
-✦ .pay             ➜ Pembayaran
-✦ .login           ➜ Login Akun
-✦ .addreseller     ➜ Tambah User
-✦ .hapusreseller   ➜ Hapus User
-✦ .rekber          ➜ Jasa Rekber
-✦ .listreseller    ➜ Lihat User
-✦ .risetlimit      ➜ Riset Akun
-✦ .proses          ➜ Proses Paket
-✦ .listvpn         ➜ Harga VPN
-✦ .pointing        ➜ Add Domain
-✦ .listdomain      ➜ List Domain
-✦ .hapusdomain     ➜ Hapus Domain
-✦ .addsc           ➜ Tambah Script
-✦ .listsc          ➜ List Script
-✦ .getsc           ➜ Ambil Script
-✦ .addvps          ➜ Tambah VPS
-✦ .hapusvps        ➜ Hapus VPS
-✦ .listvps         ➜ Lihat VPS
-✦ .autoread        ➜ Auto Baca
-✦ .autotyping      ➜ Auto Ketik
-
-📡 BUAT AKUN
-✦ .sgws            ➜ SG WS VLESS
-✦ .sgwc            ➜ SG WC VLESS
-✦ .idws            ➜ ID WS VLESS
-✦ .idwc            ➜ ID WC VLESS
-✦ .vmess           ➜ Buat Akun
-✦ .vless           ➜ Buat Akun
-✦ .trojan          ➜ Buat Akun 
-✦ .ssh             ➜ Buat Akun 
-
-🎨 LAINNYA
-✦ .s     ➜ Buat Stiker
-✦ .hd    ➜ Gambar HD
+✦ .pay            ➜ Pembayaran
+✦ .login          ➜ Login Akun
+✦ .addreseller    ➜ Tambah User
+✦ .hapusreseller  ➜ Hapus User
+✦ .listreseller   ➜ Lihat User
+✦ .risetlimit     ➜ Riset Akun
+✦ .proses         ➜ Proses Paket
+✦ .listvpn        ➜ Harga VPN
+✦ .pointing       ➜ Add Domain
+✦ .listdomain     ➜ List Domain
+✦ .addsc          ➜ Tambah Script
+✦ .listsc         ➜ List Script
+✦ .getsc          ➜ Ambil Script
+✦ .autoread       ➜ Auto Baca
+✦ .autotyping     ➜ Auto Ketik
+✦ .hapusdomain    ➜ Hapus domain
+✦ .addvps         ➜ Tambah VPS
+✦ .hapusvps       ➜ Hapus VPS
+✦ .listvps        ➜ Lihat VPS
+✦ .sgws           ➜ SG WS VLESS
+✦ .sgwc           ➜ SG WC VLESS
+✦ .idws           ➜ ID WS VLESS
+✦ .idwc           ➜ ID WC VLESS
+✦ .vmess          ➜ Buat Akun 
+✦ .vless          ➜ Buat Akun 
+✦ .trojan         ➜ Buat Akun 
+✦ .ssh            ➜ Buat Akun 
+✦ .s              ➜ Buat Stiker
+✦ .hd             ➜ Gambar HD
 
 📣 PUSH MENU
-✦ .jpm         ➜ Push Pesan
-✦ .jpmhidetag  ➜ Push Tanpa Tag
-✦ .jpmfoto     ➜ Push Gambar
+✦ .jpm        ➜ Push Pesan
+✦ .jpmhidetag ➜ Push Tanpa Tag
+✦ .jpmfoto    ➜ Push Gambar
 
 📡 CHANNEL
-✦ .cekidch  ➜ Cek ID Channel
-✦ .addch    ➜ Tambah Channel
-✦ .delch    ➜ Hapus Channel
-✦ .listch   ➜ List Channel
-✦ .jpmch    ➜ Push via Channel
+✦ .cekidch    ➜ Cek ID Channel
+✦ .addch      ➜ Tambah Channel
+✦ .delch      ➜ Hapus Channel
+✦ .listch     ➜ List Channel
+✦ .jpmch      ➜ Push via Channel
 
-📛 Riswan Bot © 2023
+📛 Riswan Bot Copyright 2023
 ` + "```";
+
   await sock.sendMessage(m.chat, {
     text: teks,
     mentions: [m.sender]
   }, { quoted: m });
 }
 break;
-case 'menu': {
-  const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━
-✨PANEL BOT VPN PGETUNNEL
-━━━━━━━━━━━━━━━━━━━━━━
-🟢 .ssh    → user 30 500 2
-🔵 .vless  → user 30 500 2
-🟣 .vmess  → user 30 500 2
-🔴 .trojan → user 30 500 2
+case 'menu':
+case 'cerajshsusbtevpn': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
 
-📌 Format Perintah:
-🧩 .ssh risvpn 30 500 2
-👤 user → nama pengguna
-🗓️ 30   → masa aktif (hari)
-📦 500  → limit kuota (GB)
-🌐 2    → maksimal IP login
-━━━━━━━━━━━━━━━━━━━━━━
-🧭 Menu Tambahan:
-📚 .allmenu → lihat semua
-━━━━━━━━━━━━━━━━━━━━━━
-🔐 Admin Only:
-🛠️ .addvps
-👥 .addreseller
-♻️ .risetlimit
-🗑️ .hapusreseller
-📋 .listreseller
+  const uptime = () => {
+    let totalSeconds = parseInt(process.uptime());
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
 
-📍 by © Riswan Store 2023
-━━━━━━━━━━━━━━━━━━━━━━` + "```";
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm');
+
+  const poter = "```" + `👥 WELCOME TO RISWAN STORE
+👋 Hai @${m.sender.replace(/[^0-9]/g, '')}
+📅 ${hari}, ${tanggal} ${jam}
+⚡ Bot Aktif: ${uptime()}
+
+📶 BOT VPN PREMIUM
+
+🔸 SSH     : .ssh user 30 500 2  
+🔸 VLESS   : .vless user 30 500 2  
+🔸 VMESS   : .vmess user 30 500 2  
+🔸 TROJAN  : .trojan user 30 500 2  
+
+💡 Format:
+👤 user  = nama pengguna  
+📆 30    = aktif 30 hari  
+📦 500   = kuota 500GB  
+🔢 2     = maksimal 2 IP  
+
+👥 menu bot lainnya .allmenu
+
+👥 perintah khusus owner:
+  .addvps .addreseller .risetlimit
+  .hapusreseller .listreseller
+
+📛 Riswan Bot Copyright 2023
+` + "```";
   await sock.sendMessage(m.chat, {
-    text: poter
+    text: poter,
+    mentions: [m.sender]
   }, { quoted: m });
 }
 break;
@@ -1064,18 +1079,18 @@ case 'shadowsocks': {
 
             return m.reply(
 `✅ *Berhasil Membuat Akun SSH*
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
+──────────────────────────────
 👤 Host: ${sshConfig.host}
 📛 Username: ${usernameInput}
 🔑 Password: ${password}
 📅 Expired: ${expiredDate}
 📶 IP Limit: ${maxIP}
 📊 Quota: ${quotaGB}GB
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
+──────────────────────────────
 🌐 ${sshConfig.host}:443@${usernameInput}:${password}
-⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store*  t.me/JesVpnt
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`
+⚠️ Gunakan akun ini dengan bijak.
+👤 Bot by Riswan Store
+──────────────────────────────`
             );
         } else {
             let scriptPath = '';
@@ -1113,11 +1128,11 @@ case 'shadowsocks': {
 
                 return m.reply(
 `✅ *Berhasil Membuat Akun ${command.toUpperCase()}*
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-${message}*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store* t.me/JesVpnt
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`);
+──────────────────────────────
+${message}──────────────────────────────
+⚠️ Gunakan akun ini dengan bijak.
+👤 Bot by Riswan Store
+──────────────────────────────`);
             } else {
                 return m.reply(`❌ Output dari VPS tidak sesuai format.\n\n${result.stdout}`);
             }
@@ -1518,57 +1533,7 @@ INFO & RESOURCE
   }, { quoted: m });
 }
 break;
-case 'rekber':
-case 'jasa rekber': {
-  try {
-    const moment = require('moment-timezone');
-    moment.locale('id');
 
-    // Fungsi menghitung uptime bot
-    const uptime = () => {
-      const totalSeconds = parseInt(process.uptime());
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      return `${hours} jam ${minutes} menit`;
-    };
-
-    const waktu = moment().tz('Asia/Jakarta');
-    const tanggal = waktu.format('LL');
-    const hari = waktu.format('dddd');
-    const jam = waktu.format('HH:mm');
-
-    const pesan = "```" + `
-🔒 JASA REKBER (Rekening Bersama)
-
-📆 hari ${hari}, ${tanggal}
-⏰ Jam     : ${jam}
-🔧 Aktif   : ${uptime()}
-
-💰 Biaya   : Rp 3.000
-📛 Nama    : Sandi Herlan
-📱 No dana : 0896-2993-9141
-
-📌 LANGKAH-LANGKAH:
-📩 Chat admin dulu
-💸 Kirim dana ke kami
-✅ Admin konfirmasi
-🔁 Dana diteruskan
-🔒 Transaksi aman
-
-📞 Hubungi Admin:
-👉 wa.me/6285888801241
-` + "```";
-
-    await sock.sendMessage(m.chat, {
-      image: { url: `${payment.qris}` },
-      caption: pesan
-    }, { quoted: m });
-
-  } catch (e) {
-    return m.reply('*Gagal menampilkan informasi jasa rekber!*');
-  }
-}
-break;
 case 'login': {
   const moment = require('moment-timezone');
   moment.locale('id');
@@ -2042,14 +2007,10 @@ ${data.description}
   }
 }
 
-let file = require.resolve(__filename);
-fs.watchFile(file, (curr, prev) => {
-  try {
-    fs.unwatchFile(file);
-    console.log(`Update detected in ${__filename}, reloading module...`);
-    delete require.cache[file];
-    require(file);
-  } catch (err) {
-    console.error('Error reloading file:', err);
-  }
-});
+let file = require.resolve(__filename)
+fs.watchFile(file, () => {
+  fs.unwatchFile(file)
+  console.log(`Update ${__filename}`)
+  delete require.cache[file]
+  require(file)
+})
