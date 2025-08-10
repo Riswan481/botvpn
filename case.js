@@ -909,7 +909,7 @@ case "idwc":
 case "sgws":
 case "sgwc": {
   if (!q) {
-    return reply(`📆 Masukkan domain\n👉 Contoh: .${command} bug.example.com`);
+    return reply(`➡️ Masukkan domain\n👉 Contoh: .${command} bug.example.com`);
   }
 
   const domain = q.trim();
@@ -947,7 +947,29 @@ case 'vless':
 case 'trojan':
 case 'shadowsocks': {
 
-    // Fungsi hitung akun reseller dan simpan akun reseller tetap sama...
+    // Fungsi hitung akun reseller
+    function getLimit(resellerId) {
+        try {
+            const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
+            const akun = JSON.parse(data);
+            return akun.filter(a => a.owner === resellerId).length;
+        } catch (e) {
+            console.error('❌ Gagal membaca database reseller:', e);
+            return 0;
+        }
+    }
+
+    // Fungsi simpan akun reseller ke database lokal
+    function saveResellerAccount({ username, owner, type }) {
+        try {
+            const file = './reseller_accounts.json';
+            const db = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : [];
+            db.push({ username, owner, type });
+            fs.writeFileSync(file, JSON.stringify(db, null, 2));
+        } catch (e) {
+            console.error('❌ Gagal simpan data reseller:', e);
+        }
+    }
 
     const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
     const resellerId = m.sender.replace(/[^0-9]/g, '');
@@ -960,22 +982,18 @@ case 'shadowsocks': {
 
     const args = m.text.trim().split(/\s+/).slice(1);
     const usernameInput = args[0];
-    const expiredRaw = args[1]; // Bisa angka atau string 'trial'
+    const expiredDays = parseInt(args[1]);
     const quotaGB = parseInt(args[2]) || 0;
     const maxIP = parseInt(args[3]) || 1;
     const bugDomain = args[4] || 'quiz.vidio.com';
 
-    // Validasi usernameInput dan expiredRaw
-    if (!usernameInput || (!(!isNaN(parseInt(expiredRaw)) && parseInt(expiredRaw) > 0) && !(['vmess','vless','trojan','ssh'].includes(command) && expiredRaw === 'trial'))) {
+    if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
         return m.reply(`⚠️ Format salah. Contoh:
 *👉 .${command} user 30 500 2*
 
-Untuk trial (30 menit), gunakan:
-*👉 .${command} user trial 0 1*
-
 📌 Keterangan:
 👤 *user* : nama pengguna  
-⏳ *30* atau *trial* : masa aktif (hari) atau trial 30 menit  
+⏳ *30* : masa aktif (hari)  
 📦 *500* : kuota (GB)  
 🔢 *2* : max IP login`);
     }
@@ -984,69 +1002,36 @@ Untuk trial (30 menit), gunakan:
         return m.reply("❌ Kuota/IP tidak valid untuk VMess/VLESS/Trojan.");
     }
 
-    react();
+    react(); // Reaksi loading
 
     const ssh = new NodeSSH();
     try {
         await ssh.connect(sshConfig);
 
         if (command === 'ssh') {
-            if (expiredRaw === 'trial') {
-                // Trial 30 menit SSH (buat user dengan expired +30 menit)
-                const password = Math.random().toString(36).slice(-8);
-                const expiredDate = moment().add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+            const password = Math.random().toString(36).slice(-8);
+            const expiredDate = moment().add(expiredDays, 'days').format('YYYY-MM-DD');
 
-                const sshResult = await ssh.execCommand(`
-                    useradd -M -s /bin/false ${usernameInput} && \\
-                    echo "${usernameInput}:${password}" | chpasswd && \\
-                    chage -E $(date -d "+30 minutes" +%Y-%m-%d) ${usernameInput}
-                `);
+            const sshResult = await ssh.execCommand(`
+                useradd -e ${expiredDate} -M -s /bin/false ${usernameInput} && \\
+                echo "${usernameInput}:${password}" | chpasswd
+            `);
 
-                if (sshResult.stderr) {
-                    console.error("❌ SSH stderr:", sshResult.stderr);
-                    return m.reply("❌ Gagal membuat akun SSH trial.\n\n" + sshResult.stderr);
-                }
+            if (sshResult.stderr) {
+                console.error("❌ SSH stderr:", sshResult.stderr);
+                return m.reply("❌ Gagal membuat akun SSH.\n\n" + sshResult.stderr);
+            }
 
-                if (isReseller) {
-                    saveResellerAccount({ username: usernameInput, owner: resellerId, type: 'ssh' });
-                }
+            // Simpan akun reseller
+            if (isReseller) {
+                saveResellerAccount({
+                    username: usernameInput,
+                    owner: resellerId,
+                    type: 'ssh'
+                });
+            }
 
-                return m.reply(
-`✅ *Berhasil Membuat Akun SSH Trial 30 menit*
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-👤 Host: ${sshConfig.host}
-📛 Username: ${usernameInput}
-🔑 Password: ${password}
-📅 Expired: ${expiredDate}
-📶 IP Limit: ${maxIP}
-📊 Quota: ${quotaGB}GB
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-🌐 ${sshConfig.host}:443@${usernameInput}:${password}
-⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store* t.me/JesVpnt
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`
-                );
-
-            } else {
-                // Non trial SSH seperti biasa (expiredDays angka)
-                const expiredDate = moment().add(parseInt(expiredRaw), 'days').format('YYYY-MM-DD');
-                const password = Math.random().toString(36).slice(-8);
-
-                const sshResult = await ssh.execCommand(`
-                    useradd -e ${expiredDate} -M -s /bin/false ${usernameInput} && \\
-                    echo "${usernameInput}:${password}" | chpasswd
-                `);
-
-                if (sshResult.stderr) {
-                    console.error("❌ SSH stderr:", sshResult.stderr);
-                    return m.reply("❌ Gagal membuat akun SSH.\n\n" + sshResult.stderr);
-                }
-
-                if (isReseller) {
-                    saveResellerAccount({ username: usernameInput, owner: resellerId, type: 'ssh' });
-                }
-
-                return m.reply(
+            return m.reply(
 `✅ *Berhasil Membuat Akun SSH*
 *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
 👤 Host: ${sshConfig.host}
@@ -1058,28 +1043,17 @@ Untuk trial (30 menit), gunakan:
 *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
 🌐 ${sshConfig.host}:443@${usernameInput}:${password}
 ⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store* t.me/JesVpnt
+👤 *Bot by Riswan Store*  t.me/JesVpnt
 *━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`
-                );
-            }
-
+            );
         } else {
-            // vmess, vless, trojan dan shadowsocks
             let scriptPath = '';
-            if (command === 'vmess') {
-                scriptPath = expiredRaw === 'trial' ? '/etc/xray/add-vmess-trial' : '/etc/xray/add-vmess';
-            } else if (command === 'vless') {
-                scriptPath = expiredRaw === 'trial' ? '/etc/xray/add-vless-trial' : '/etc/xray/add-vless';
-            } else if (command === 'trojan') {
-                scriptPath = expiredRaw === 'trial' ? '/etc/xray/add-trojan-trial' : '/etc/xray/add-trojan';
-            } else if (command === 'shadowsocks') {
-                scriptPath = '/etc/xray/add-ss';
-            }
+            if (command === 'vmess') scriptPath = '/etc/xray/add-vmess';
+            else if (command === 'vless') scriptPath = '/etc/xray/add-vless';
+            else if (command === 'trojan') scriptPath = '/etc/xray/add-trojan';
+            else if (command === 'shadowsocks') scriptPath = '/etc/xray/add-ss';
 
-            const execCmd = expiredRaw === 'trial'
-                ? `${scriptPath} ${usernameInput} ${quotaGB} ${maxIP} ${bugDomain}`
-                : `${scriptPath} ${usernameInput} ${expiredRaw} ${quotaGB} ${maxIP} ${bugDomain}`;
-
+            const execCmd = `${scriptPath} ${usernameInput} ${expiredDays} ${quotaGB} ${maxIP} ${bugDomain}`;
             const result = await ssh.execCommand(execCmd);
 
             if (result.stderr && !result.stdout.includes("SUCCESS")) {
@@ -1097,8 +1071,13 @@ Untuk trial (30 menit), gunakan:
                     if (line.includes(':')) message += `${line}\n`;
                 }
 
+                // Simpan akun reseller
                 if (isReseller) {
-                    saveResellerAccount({ username: usernameInput, owner: resellerId, type: command });
+                    saveResellerAccount({
+                        username: usernameInput,
+                        owner: resellerId,
+                        type: command
+                    });
                 }
 
                 return m.reply(
