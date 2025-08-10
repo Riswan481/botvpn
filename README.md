@@ -1,6 +1,10 @@
-Botvpn wa Installation Guide
+WhatsApp Bot Installation Guide
 
-Panduan ini menjelaskan cara instalasi dan menjalankan BotVPN di server Linux (misal Ubuntu/Debian).
+Panduan ini menyediakan langkah-langkah lengkap untuk menginstal dan menjalankan WhatsApp Bot pada server Linux seperti Ubuntu atau Debian. Dengan instruksi yang sistematis dan mudah diikuti, Anda akan dapat mengaktifkan bot WhatsApp dengan cepat dan menjaga bot agar berjalan stabil menggunakan PM2.
+
+Dokumentasi ini mencakup instalasi semua dependensi penting, pengaturan bot, hingga pengelolaan proses agar bot tetap aktif otomatis meskipun server melakukan restart.
+
+Selamat mencoba dan semoga bot WhatsApp Anda berjalan lancar!
 
 ---
 
