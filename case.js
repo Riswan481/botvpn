@@ -703,6 +703,7 @@ case 'ceratevpn': {
 ✦ .sgwc            ➜ SG WC VLESS
 ✦ .idws            ➜ ID WS VLESS
 ✦ .idwc            ➜ ID WC VLESS
+✦ .listwc          ➜ List Wildcard
 ✦ .vmess           ➜ Buat Akun
 ✦ .vless           ➜ Buat Akun
 ✦ .trojan          ➜ Buat Akun 
@@ -726,6 +727,7 @@ case 'ceratevpn': {
 
 📛 Riswan Bot © 2023
 ` + "```";
+
   await sock.sendMessage(m.chat, {
     text: teks,
     mentions: [m.sender]
@@ -915,7 +917,7 @@ case "sgwc": {
   const domain = q.trim();
 
   const isWC = command.endsWith("wc");
-  const baseHost = "violetvpn.biz.id";
+  const baseHost = "vpnriswan.pgetunnel.cloud";
   const hostAndSNI = isWC ? `${domain}.${baseHost}` : baseHost;
 
   const config = {
@@ -1479,6 +1481,59 @@ INFO & RESOURCE
 • Channel  : t.me/pgetunnel
 • VLESS CF : t.me/pgetunnel_robot
 • Script   : t.me/subdom_robot
+` + "```";
+
+  await sock.sendMessage(m.chat, {
+    text: poter,
+    mentions: [m.sender]
+  }, { quoted: m });
+}
+break;
+case 'listwc':
+case 'cerajshshgusbtevpn': {
+  const moment = require('moment-timezone');
+  moment.locale('id');
+
+  const uptime = () => {
+    let totalSeconds = parseInt(process.uptime());
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${hours} jam ${minutes} menit`;
+  };
+
+  const waktu = moment().tz('Asia/Jakarta');
+  const tanggal = waktu.format('LL');
+  const hari = waktu.format('dddd');
+  const jam = waktu.format('HH:mm');
+
+  const poter = "```" + `
+👤 Hai @${m.sender.replace(/[^0-9]/g, '')}
+📅 ${hari}, ${tanggal} • ${jam}
+⏱️ Uptime: ${uptime()}
+
+LIST WILDCARD
+1. api.midtrans.com
+2. ava.game.naver.com
+3. bakrie.ac.id
+4. blog.webex.com
+5. cache.netflix.com
+6. cdn.opensignal.com
+7. cdn.who.int
+8. dev.speedtest.net
+9. dl.cvs.freefiremobile.com
+10. edu.ruangguru.com
+11. g.whatsapp.net
+12. graph.instagram.com
+13. img.email1.vidio.com
+14. investor.fb.com
+15. investors.spotify.com
+16. live.iflix.com
+17. stripchat.page
+18. support.zoom.us
+19. sushiroll.co.id
+20. unnes.ac.id
+21. untar.ac.id
+22. zaintest.vuclip.com
 ` + "```";
 
   await sock.sendMessage(m.chat, {
