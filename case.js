@@ -2042,10 +2042,14 @@ ${data.description}
   }
 }
 
-let file = require.resolve(__filename)
-fs.watchFile(file, () => {
-  fs.unwatchFile(file)
-  console.log(`Update ${__filename}`)
-  delete require.cache[file]
-  require(file)
-})
+let file = require.resolve(__filename);
+fs.watchFile(file, (curr, prev) => {
+  try {
+    fs.unwatchFile(file);
+    console.log(`Update detected in ${__filename}, reloading module...`);
+    delete require.cache[file];
+    require(file);
+  } catch (err) {
+    console.error('Error reloading file:', err);
+  }
+});
