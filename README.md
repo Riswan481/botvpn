@@ -25,20 +25,24 @@ git clone https://github.com/Riswan481/botvpn.git
 ```bash
 cd botvpn
 ```
-4. Install dependencies Node.js:
+4.menginstall module cheerio yang dibutuhkan.
+```bash
+npm install cheerio
+```
+5. Install dependencies Node.js:
 ```bash
 npm install
 ```
-5. Jalankan bot untuk pertama kali:
+6. Jalankan bot untuk pertama kali:
 ```bash
 node index.js
 ```
-6. Install PM2 secara global untuk manajemen proses:
+7. Install PM2 secara global untuk manajemen proses:
 ```bash
 npm install -g pm2
 ```
-7. Jalankan bot menggunakan PM2:
-8. Setelah ini Reboot vps 
+8. Jalankan bot menggunakan PM2:
+9. Setelah ini Reboot vps 
 ```bash
 pm2 start index.js --name botvpn
 pm2 save
