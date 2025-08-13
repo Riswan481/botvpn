@@ -31,7 +31,7 @@ const {
 } = require('file-type')
 
 const CLOUDFLARE_API_TOKEN = 'c5u39dKBh6LFsJKJdZ-F00eke-vIIbvatphFbB8e'
-const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  /
+const CLOUDFLARE_ZONE_ID = '229c1e484eb41505fd0abc3125b9b795'  
 const CLOUDFLARE_API_BASE = 'https://api.cloudflare.com/client/v4'
 
 
