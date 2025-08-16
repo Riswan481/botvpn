@@ -738,9 +738,21 @@ case 'ceratevpn': {
 }
 break;
 case 'menu': {
-  const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━
+  // ambil uptime bot
+  const uptime = process.uptime(); 
+  const hours = Math.floor(uptime / 3600);
+  const minutes = Math.floor((uptime % 3600) / 60);
+  const seconds = Math.floor(uptime % 60);
+  const runtime = `${hours}j ${minutes}m ${seconds}d`;
+
+  // ambil jam sekarang
+  const now = new Date();
+  const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  const jam = now.toLocaleTimeString('id-ID', options);
+
+  const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨PANEL BOT VPN PGETUNNEL
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━
 🟢 .ssh    → user 30 500 2
 🔵 .vless  → user 30 500 2
 🟣 .vmess  → user 30 500 2
@@ -752,19 +764,36 @@ case 'menu': {
 🗓️ 30   → masa aktif (hari)
 📦 500  → limit kuota (GB)
 🌐 2    → maksimal IP login
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━
 🧭 Menu Tambahan:
 📚 .allmenu → lihat semua
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
 🛠️ .addvps
 👥 .addreseller
 ♻️ .risetlimit
 🗑️ .hapusreseller
 📋 .listreseller
-
+━━━━━━━━━━━━━━━━━━━━━━━━━
+💎 Join Seller Hanya Rp30.000
+🔑 Bisa Membuat Akun 6x
+📲 Hubungi no bot untuk daftar
+━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 Promo Harga VPN Rp10.000 2 IP
+━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 Aturan:
+⚠️ Setiap kali membuat akun
+❌ Harus Sesuai format contoh
+❌ Jika lebih dari ketentuan:
+➡️ Reseller akan dicabut
+➡️ Akun dihapus tanpa notifikasi
+━━━━━━━━━━━━━━━━━━━━━━━━━
+⏳ Uptime : ${runtime}
+🕒 Jam    : ${jam}
+━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 by © Riswan Store 2023
-━━━━━━━━━━━━━━━━━━━━━━` + "```";
+━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
+
   await sock.sendMessage(m.chat, {
     text: poter
   }, { quoted: m });
