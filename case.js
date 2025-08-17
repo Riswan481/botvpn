@@ -1167,17 +1167,20 @@ ${message}*━━━━━━━━━━━━━━━━━━━━━━━
 break;
 case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
-  
+
   const args = m.text.trim().split(/\s+/);
-  const target = args[1]?.replace(/[^0-9]/g, ''); // ambil nomor HP
-  const limit = parseInt(args[2]) > 0 ? parseInt(args[2]) : 6; // default 6
+  console.log('ARGS:', args); // 🔍 debug
+  const target = args[1]?.replace(/[^0-9]/g, ''); 
+  const limit = parseInt(args[2]) > 0 ? parseInt(args[2]) : 6; 
+
+  console.log('TARGET:', target, 'LIMIT:', limit); // 🔍 debug
 
   if (!target) {
     return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
   }
 
   const list = loadResellers(); 
-  if (!Array.isArray(list)) return m.reply('❌ Data reseller corrupt, hapus file resellers.json dulu.');
+  console.log('LIST:', list); // 🔍 debug
 
   if (list.find(r => r.id === target)) {
     return m.reply('✅ Sudah menjadi reseller.');
