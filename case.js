@@ -98,30 +98,27 @@ function getLimit(id) {
   return limits[id] || 0;
 }
 // Lokasi file JSON reseller
-const RES_FILE = path.join(__dirname, 'resellers.json');
-
-// Fungsi load data reseller
+// Fungsi ambil reseller
 function loadResellers() {
   try {
-    if (!fs.existsSync(RES_FILE)) {
-      fs.writeFileSync(RES_FILE, '[]'); // buat file kosong kalau belum ada
+    if (!fs.existsSync(path)) {
+      return []; // kalau file belum ada, return array kosong
     }
-    const data = fs.readFileSync(RES_FILE, 'utf-8'); // baca file dengan encoding
-    const list = JSON.parse(data);
-
-    if (!Array.isArray(list)) throw new Error('resellers.json bukan array');
-    return list;
+    const data = fs.readFileSync(path, 'utf-8');
+    return JSON.parse(data);
   } catch (e) {
-    console.error('❌ Gagal baca data reseller:', e.message);
-    // fallback reset ke array kosong
-    try { fs.writeFileSync(RES_FILE, '[]'); } catch {}
-    return [];
+    console.error('❌ Error loadResellers:', e);
+    return []; // fallback kalau file rusak
   }
 }
 
 // Fungsi simpan reseller
 function saveResellers(list) {
-  fs.writeFileSync(RES_FILE, JSON.stringify(list, null, 2));
+  try {
+    fs.writeFileSync(path, JSON.stringify(list, null, 2));
+  } catch (e) {
+    console.error('❌ Error saveResellers:', e);
+  }
 }
 // === END: Penambahan dan Konfigurasi SSH ===
 
@@ -1169,30 +1166,31 @@ case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
 
   const args = m.text.trim().split(/\s+/);
-  console.log('ARGS:', args); // 🔍 debug
-  const target = args[1]?.replace(/[^0-9]/g, ''); 
-  const limit = parseInt(args[2]) > 0 ? parseInt(args[2]) : 6; 
-
-  console.log('TARGET:', target, 'LIMIT:', limit); // 🔍 debug
+  const target = args[1]?.replace(/[^0-9]/g, ''); // ambil nomor saja
+  const limit = args[2] && !isNaN(args[2]) && parseInt(args[2]) > 0 
+                ? parseInt(args[2]) 
+                : 6; // default 6
 
   if (!target) {
-    return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
+    return m.reply('⚠️ Format salah!\n\nContoh: *.addreseller 6281234567890 10*');
   }
 
-  const list = loadResellers(); 
-  console.log('LIST:', list); // 🔍 debug
+  let list = loadResellers(); // ambil data reseller
+  if (!Array.isArray(list)) list = []; // antisipasi error kalau file kosong/korup
 
+  // cek apakah sudah jadi reseller
   if (list.find(r => r.id === target)) {
-    return m.reply('✅ Sudah menjadi reseller.');
+    return m.reply('✅ Nomor ini sudah terdaftar sebagai reseller.');
   }
 
+  // tambahkan reseller baru
   list.push({ id: target, limit });
   saveResellers(list);
 
   return m.reply(
-`✅ Berhasil menambahkan reseller:
-📱 Nomor: ${target}
-📦 Limit: ${limit} akun`
+`✅ Reseller berhasil ditambahkan:
+📱 Nomor : ${target}
+📦 Limit : ${limit} akun`
   );
 }
 break;
