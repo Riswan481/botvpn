@@ -97,17 +97,31 @@ function getLimit(id) {
   const limits = loadLimits();
   return limits[id] || 0;
 }
+// Lokasi file JSON reseller
+const RES_FILE = path.join(__dirname, 'resellers.json');
+
+// Fungsi load data reseller
 function loadResellers() {
   try {
-    if (!fs.existsSync('./resellers.json')) {
-      fs.writeFileSync('./resellers.json', '[]');
+    if (!fs.existsSync(RES_FILE)) {
+      fs.writeFileSync(RES_FILE, '[]'); // buat file kosong kalau belum ada
     }
-    const data = fs.readFileSync('./resellers.json');
-    return JSON.parse(data);
+    const data = fs.readFileSync(RES_FILE, 'utf-8'); // baca file dengan encoding
+    const list = JSON.parse(data);
+
+    if (!Array.isArray(list)) throw new Error('resellers.json bukan array');
+    return list;
   } catch (e) {
-    console.error('❌ Gagal baca data reseller:', e);
+    console.error('❌ Gagal baca data reseller:', e.message);
+    // fallback reset ke array kosong
+    try { fs.writeFileSync(RES_FILE, '[]'); } catch {}
     return [];
   }
+}
+
+// Fungsi simpan reseller
+function saveResellers(list) {
+  fs.writeFileSync(RES_FILE, JSON.stringify(list, null, 2));
 }
 // === END: Penambahan dan Konfigurasi SSH ===
 
@@ -1162,7 +1176,6 @@ case 'addreseller': {
     return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
   }
 
-  // pastikan loadResellers global function
   const list = loadResellers(); 
   if (!Array.isArray(list)) return m.reply('❌ Data reseller corrupt, hapus file resellers.json dulu.');
 
@@ -1171,7 +1184,7 @@ case 'addreseller': {
   }
 
   list.push({ id: target, limit });
-  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+  saveResellers(list);
 
   return m.reply(
 `✅ Berhasil menambahkan reseller:
