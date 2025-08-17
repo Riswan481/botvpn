@@ -1151,26 +1151,35 @@ ${message}*━━━━━━━━━━━━━━━━━━━━━━━
     }
 }
 break;
-
 case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
   
   const args = m.text.trim().split(/\s+/);
-  const target = args[1]?.replace(/[^0-9]/g, '');
-  const limit = parseInt(args[2]) || 6; // default 6 kalau tidak diisi
+  const target = args[1]?.replace(/[^0-9]/g, ''); // ambil nomor HP
+  const limit = parseInt(args[2]) > 0 ? parseInt(args[2]) : 6; // default 6
 
-  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
+  if (!target) {
+    return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
+  }
 
-  const list = loadResellers();
-  if (list.find(r => r.id === target)) return m.reply('✅ Sudah menjadi reseller.');
+  // pastikan loadResellers global function
+  const list = loadResellers(); 
+  if (!Array.isArray(list)) return m.reply('❌ Data reseller corrupt, hapus file resellers.json dulu.');
+
+  if (list.find(r => r.id === target)) {
+    return m.reply('✅ Sudah menjadi reseller.');
+  }
 
   list.push({ id: target, limit });
   fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
-  
-  return m.reply(`✅ Berhasil menambahkan reseller:\n${target}\n📌 Limit: ${limit} akun`);
+
+  return m.reply(
+`✅ Berhasil menambahkan reseller:
+📱 Nomor: ${target}
+📦 Limit: ${limit} akun`
+  );
 }
 break;
-
 case 'hapusreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
