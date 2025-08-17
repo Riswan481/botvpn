@@ -981,7 +981,17 @@ case 'vless':
 case 'trojan':
 case 'shadowsocks': {
 
-    // === Fungsi hitung akun reseller ===
+    // Fungsi baca reseller + limit
+    function loadResellers() {
+        try {
+            const data = fs.readFileSync('./resellers.json', 'utf-8');
+            return JSON.parse(data);
+        } catch {
+            return [];
+        }
+    }
+
+    // Fungsi hitung akun reseller
     function getLimit(resellerId) {
         try {
             const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
@@ -993,7 +1003,7 @@ case 'shadowsocks': {
         }
     }
 
-    // === Fungsi simpan akun reseller ===
+    // Fungsi simpan akun reseller ke database lokal
     function saveResellerAccount({ username, owner, type }) {
         try {
             const file = './reseller_accounts.json';
@@ -1005,44 +1015,22 @@ case 'shadowsocks': {
         }
     }
 
-    // === Fungsi ambil limit reseller ===
-    function getResellerLimit(resellerId) {
-        try {
-            const file = './reseller_limits.json';
-            if (!fs.existsSync(file)) return 6; // default 6 jika file tidak ada
-
-            const limits = JSON.parse(fs.readFileSync(file, 'utf-8'));
-            return limits[resellerId] || 6; // default 6 jika belum diatur
-        } catch (e) {
-            console.error('❌ Gagal membaca reseller_limits.json:', e);
-            return 6;
-        }
-    }
-
-    // === Fungsi set limit reseller (khusus Owner) ===
-    function setResellerLimit(resellerId, limit) {
-        try {
-            const file = './reseller_limits.json';
-            const limits = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : {};
-            limits[resellerId] = limit;
-            fs.writeFileSync(file, JSON.stringify(limits, null, 2));
-        } catch (e) {
-            console.error('❌ Gagal menyimpan reseller_limits.json:', e);
-        }
-    }
-
-    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
     const resellerId = m.sender.replace(/[^0-9]/g, '');
+    const resellers = loadResellers();
+    const resellerData = resellers.find(r => r.id === resellerId);
+
+    const isReseller = !!resellerData;
 
     if (!isOwner && !isReseller)
         return m.reply('❌ *Fitur ini hanya untuk Owner atau Reseller*');
 
-    // === Cek limit sesuai pengaturan owner ===
-    if (isReseller && getLimit(resellerId) >= getResellerLimit(resellerId)) {
-        return m.reply(`❌ *Limit reseller tercapai (maksimal ${getResellerLimit(resellerId)} akun total).* Hubungi admin untuk menambah limit.`);
+    if (isReseller) {
+        const current = getLimit(resellerId);
+        if (current >= resellerData.limit) {
+            return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerData.limit} akun total)*`);
+        }
     }
 
-    // === Ambil argumen command ===
     const args = m.text.trim().split(/\s+/).slice(1);
     const usernameInput = args[0];
     const expiredDays = parseInt(args[1]);
@@ -1164,73 +1152,25 @@ ${message}*━━━━━━━━━━━━━━━━━━━━━━━
 }
 break;
 
-
-// === Command khusus owner untuk atur limit reseller ===
-case 'setlimit': {
-    if (!isOwner) return m.reply("❌ Hanya Owner yang bisa atur limit reseller.");
-
-    const args = m.text.split(/\s+/).slice(1);
-    const resellerId = args[0];
-    const limit = parseInt(args[1]);
-
-    if (!resellerId || isNaN(limit) || limit <= 0) {
-        return m.reply("⚠️ Format salah. Contoh: .setlimit 123456 10");
-    }
-
-    setResellerLimit(resellerId, limit);
-    return m.reply(`✅ Limit reseller *${resellerId}* diatur menjadi *${limit} akun*`);
-}
-break;
-
 case 'addreseller': {
-    if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
+  if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
+  
+  const args = m.text.trim().split(/\s+/);
+  const target = args[1]?.replace(/[^0-9]/g, '');
+  const limit = parseInt(args[2]) || 6; // default 6 kalau tidak diisi
 
-    const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
-    if (!target) return m.reply('⚠️ Format salah!\n\nContoh: *.addreseller 6281234567890*');
+  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.addreseller 6281234567890 10*');
 
-    let list = [];
-    try {
-        list = fs.existsSync('./resellers.json')
-            ? JSON.parse(fs.readFileSync('./resellers.json'))
-            : [];
-    } catch (e) {
-        console.error('❌ Gagal membaca resellers.json:', e);
-        return m.reply('❌ Terjadi kesalahan saat membaca database reseller!');
-    }
+  const list = loadResellers();
+  if (list.find(r => r.id === target)) return m.reply('✅ Sudah menjadi reseller.');
 
-    if (list.includes(target)) return m.reply(`✅ Nomor *${target}* sudah menjadi reseller.`);
-
-    list.push(target);
-    fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
-
-    return m.reply(`✅ Berhasil menambahkan reseller:\n👤 ${target}`);
+  list.push({ id: target, limit });
+  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+  
+  return m.reply(`✅ Berhasil menambahkan reseller:\n${target}\n📌 Limit: ${limit} akun`);
 }
 break;
-case 'ceklimitreseller': {
-    const senderId = m.sender.replace(/[^0-9]/g, '');
-    let target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
 
-    // Kalau bukan owner → otomatis cek dirinya sendiri
-    if (!isOwner) {
-        target = senderId;
-    } else {
-        if (!target) return m.reply("⚠️ Format salah!\n\nContoh: *.ceklimitreseller 6281234567890*");
-    }
-
-    const current = getLimit(target); // jumlah akun sudah dibuat
-    const maxLimit = getResellerLimit(target); // limit maksimum reseller
-
-    return m.reply(
-`📊 *Cek Limit Reseller*
-━━━━━━━━━━━━━━━━━━━━━━
-👤 Reseller ID: ${target}
-📦 Akun dibuat: ${current}
-🔝 Limit Maksimal: ${maxLimit}
-📌 Sisa Slot: ${maxLimit - current}
-━━━━━━━━━━━━━━━━━━━━━━`
-    );
-}
-break;
 case 'hapusreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
@@ -1292,14 +1232,14 @@ case 'listreseller': {
     if (resellers.length === 0) return m.reply('📂 Daftar reseller kosong.');
 
     // Load data akun yang telah dibuat reseller
-    const akunData = fs.existsSync(akunFile) ? JSON.parse(fs.readFileSync(akunFile)) : {};
+    const akunData = fs.existsSync(akunFile) ? JSON.parse(fs.readFileSync(akunFile)) : [];
 
-    const teks = resellers.map((nomor, i) => {
-      const total = akunData[nomor]?.length || 0;
-      return `${i + 1}. ${nomor}`;
+    const teks = resellers.map((res, i) => {
+      const total = akunData.filter(a => a.owner === res.id).length;
+      return `${i + 1}. ${res.id}\n   📦 Limit: ${res.limit}\n   ✅ Terpakai: ${total}\n   🔓 Sisa: ${res.limit - total}\n`;
     }).join('\n');
 
-    return m.reply(`📋 *Daftar Reseller kamu:*\n\n${teks}`);
+    return m.reply(`📋 *Daftar Reseller:*\n\n${teks}`);
   } catch (e) {
     console.error('❌ Gagal membaca reseller:', e);
     return m.reply('❌ Terjadi kesalahan saat menampilkan reseller.');
