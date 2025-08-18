@@ -1,17 +1,12 @@
 [
   {
+    "username": "akun1",
     "owner": "6281234567890",
-    "username": "uservpn1",
-    "expiredDays": 30
+    "type": "ssh"
   },
   {
+    "username": "akun2",
     "owner": "6281234567890",
-    "username": "uservpn2",
-    "expiredDays": 7
-  },
-  {
-    "owner": "6289876543210",
-    "username": "uservpn3",
-    "expiredDays": 1
+    "type": "vmess"
   }
 ]
