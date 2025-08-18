@@ -1361,77 +1361,77 @@ break;
       fs.unlinkSync(media)
     }
     break       
-    case 'addsc':
-    case 'addscript': {
-      if (!isOwner) return onlyOwn()
+    // Menampilkan daftar konfigurasi yang ada (untuk semua orang)
+    case 'listconfig': {
+        const folder = './database/config'
+        if (!fs.existsSync(folder)) return m.reply('❌ Folder config belum ada.')
 
-      const quoted = m.quoted
-      if (!quoted || quoted.mtype !== 'documentMessage') {
-        return m.reply('❗Reply dokumen script yang ingin ditambahkan!\n\nContoh: *.addsc namascript.zip*')
-      }
+        const files = fs.readdirSync(folder)
+        if (files.length === 0) return m.reply('📁 Folder config kosong.')
 
-      const filename = text?.trim() || quoted.fileName || `script-${Date.now()}.zip`
+        let teks = `📜 *DAFTAR CONFIG (${files.length})*\n\n`
+        files.forEach((file, i) => {
+            teks += `${i + 1}. ${file}\n`
+        })
+        m.reply(teks)
+    }
+    break
 
-      const folder = './database/script'
-      if (!fs.existsSync(folder)) fs.mkdirSync(folder, {
-        recursive: true
-      })
+    // Mengambil dan mengirimkan konfigurasi berdasarkan nomor (untuk semua orang)
+    case 'getconfig': {
+        const folder = './database/config'
+        if (!fs.existsSync(folder)) return m.reply('❌ Folder config belum ada.')
 
-      const media = await downloadContentFromMessage(quoted, 'document')
-      let buffer = Buffer.from([])
-      for await (const chunk of media) {
-        buffer = Buffer.concat([buffer, chunk])
-      }
+        const files = fs.readdirSync(folder)
+        if (files.length === 0) return m.reply('📁 Tidak ada config.')
 
-      const filePath = require('path').join(folder, filename)
-      require('fs').writeFileSync(filePath, buffer)
+        const no = parseInt(text.trim())
+        if (isNaN(no) || no < 1 || no > files.length) return m.reply(`Masukkan nomor config yang valid!\n\nContoh: *.getconfig 1*\nGunakan *.listconfig* untuk melihat nomor config.`)
 
-      m.reply(`✅ Script berhasil ditambahkan sebagai:\n📁 ${filePath}`)
-    }
-    break
+        const filepath = path.join(folder, files[no - 1])
+        let buff = fs.readFileSync(filepath)
 
-    case 'listsc':
-    case 'listscript': {
-      if (!isOwner) return onlyOwn()
-      const folder = './database/script'
-      if (!fs.existsSync(folder)) return m.reply('❌ Folder script belum ada.')
+        // Ubah ekstensi file menjadi .hc
+        const fileName = files[no - 1].replace(/\.zip$/, '.hc')  // Ganti ekstensi .zip menjadi .hc
+        const mimetype = 'application/octet-stream'  // Bisa diganti jika perlu sesuai dengan jenis file .hc
 
-      const files = fs.readdirSync(folder)
-      if (files.length === 0) return m.reply('📁 Folder script kosong.')
+        await sock.sendMessage(m.chat, {
+            document: buff,
+            fileName: fileName,
+            mimetype: mimetype,
+        }, {
+            quoted: m
+        })
+    }
+    break
 
-      let teks = `📜 *DAFTAR SCRIPT (${files.length})*\n\n`
-      files.forEach((file, i) => {
-        teks += `${i + 1}. ${file}\n`
-      })
-      m.reply(teks)
-    }
-    break
+    // Menambahkan konfigurasi baru (untuk semua orang)
+    case 'addconfig': {
+    // Cek apakah user adalah owner
+    if (!isOwner) return m.reply('❌ Akses ditolak! Hanya owner yang bisa menggunakan perintah ini.')
 
-    case 'getsc':
-    case 'getscript': {
-      if (!isOwner) return onlyOwn()
+    const quoted = m.quoted
+    if (!quoted || quoted.mtype !== 'documentMessage') {
+        return m.reply('❗Reply dokumen config yang ingin ditambahkan!\n\nContoh: *.addconfig namaconfig.hc*')
+    }
 
-      const folder = './database/script'
-      if (!fs.existsSync(folder)) return m.reply('❌ Folder script belum ada.')
+    const filename = text?.trim() || quoted.fileName || `config-${Date.now()}.hc` // Menggunakan ekstensi .hc
 
-      const files = fs.readdirSync(folder)
-      if (files.length === 0) return m.reply('📁 Tidak ada script.')
+    const folder = './database/config'
+    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
 
-      const no = parseInt(text.trim())
-      if (isNaN(no) || no < 1 || no > files.length) return m.reply(`Masukkan nomor script yang valid!\n\nContoh: *.getsc 1*\nGunakan *.listsc* untuk melihat nomor script.`)
+    const media = await downloadContentFromMessage(quoted, 'document')
+    let buffer = Buffer.from([])
+    for await (const chunk of media) {
+        buffer = Buffer.concat([buffer, chunk])
+    }
 
-      const filepath = path.join(folder, files[no - 1])
-      let buff = fs.readFileSync(filepath)
+    const filePath = require('path').join(folder, filename)
+    require('fs').writeFileSync(filePath, buffer)
 
-      await sock.sendMessage(m.chat, {
-        document: buff,
-        fileName: files[no - 1],
-        mimetype: 'application/octet-stream',
-      }, {
-        quoted: m
-      })
-    }
-    break
+    m.reply(`✅ Config berhasil ditambahkan sebagai:\n📁 ${filePath}`)
+}
+break
 
     // CASE LIST VPN
 case 'listvpn':
