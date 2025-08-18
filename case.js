@@ -45,57 +45,51 @@ let sshConfig = {
 if (fs.existsSync(vpsFile)) {
   sshConfig = JSON.parse(fs.readFileSync(vpsFile));
 }
-// =========================
-// FUNGSI LIMIT RESELLER
-// =========================
+// ====== CONFIG LIMIT ======
 function getResellerLimit(resellerId) {
     try {
         const file = './reseller_config.json';
         if (!fs.existsSync(file)) {
-            fs.writeFileSync(file, JSON.stringify({ default: 6, resellers: {} }, null, 2));
+            fs.writeFileSync(file, JSON.stringify({ resellers: {} }, null, 2));
+            return 6; // default
         }
-        const config = JSON.parse(fs.readFileSync(file));
-
-        if (resellerId && config.resellers[resellerId]) {
-            return config.resellers[resellerId];
+        const config = JSON.parse(fs.readFileSync(file, 'utf-8'));
+        if (resellerId) {
+            return config.resellers?.[resellerId] || 6; // default 6 kalau belum ada
         }
-        return config.default; // fallback default
+        return 6;
     } catch (e) {
-        console.error('❌ Gagal baca config limit reseller:', e);
-        return 6; // fallback
+        console.error("❌ Gagal baca reseller_config:", e);
+        return 6;
     }
 }
 
-function setResellerLimit(resellerId, limit) {
+function setResellerLimit(resellerId, newLimit) {
     try {
         const file = './reseller_config.json';
-        const config = fs.existsSync(file)
-            ? JSON.parse(fs.readFileSync(file))
-            : { default: 6, resellers: {} };
-
-        config.resellers[resellerId] = limit;
+        const config = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf-8')) : { resellers: {} };
+        config.resellers = config.resellers || {};
+        config.resellers[resellerId] = newLimit;
         fs.writeFileSync(file, JSON.stringify(config, null, 2));
         return true;
     } catch (e) {
-        console.error('❌ Gagal set limit reseller:', e);
+        console.error("❌ Gagal simpan reseller_config:", e);
         return false;
     }
 }
 
-// Fungsi menghitung akun yang dipakai reseller (>1 hari)
+// ====== FUNGSI LIMIT AKUN ======
 function getLimit(resellerId) {
     try {
-        const dbFile = './reseller_accounts.json';
-        if (!fs.existsSync(dbFile)) return 0;
-
-        const accounts = JSON.parse(fs.readFileSync(dbFile));
-        return accounts.filter(acc => acc.owner === resellerId && acc.expiredDays > 1).length;
+        const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
+        const akun = JSON.parse(data);
+        // hanya hitung akun yang masa aktif > 1 hari
+        return akun.filter(a => a.owner === resellerId && a.expiredDays > 1).length;
     } catch (e) {
-        console.error('❌ Gagal hitung limit:', e);
+        console.error('❌ Gagal membaca database reseller:', e);
         return 0;
     }
 }
-
 // ==============================================================
 const {
   exec,
@@ -788,18 +782,15 @@ case 'ceratevpn': {
   }, { quoted: m });
 }
 break;
-// =============== VARIABEL GLOBAL ===============
-let promoText = "🔥 Promo Harga VPN Rp10.000 2 IP";
-let serverText = "📡 Server Utama: SG, ID, US";
-
-// ================== MENU ==================
 case 'menu': {
+  // ambil uptime bot
   const uptime = process.uptime(); 
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
   const runtime = `${hours}j ${minutes}m ${seconds}d`;
 
+  // ambil jam sekarang
   const now = new Date();
   const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' };
   const jam = now.toLocaleTimeString('id-ID', options);
@@ -814,7 +805,6 @@ case 'menu': {
 
 📌 Format Perintah:
 🧩 .ssh risvpn 30 500 2
-➡️ Trial 1 hari untuk reseller
 👤 user → nama pengguna
 🗓️ 30   → masa aktif (hari)
 📦 500  → limit kuota (GB)
@@ -825,11 +815,7 @@ case 'menu': {
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
 🛠️ .addvps
-➡️ .setlimit
-➡️ .setserver
-➡️ .ceklimit
 👥 .addreseller
-➡️ .setpromo
 ♻️ .risetlimit
 🗑️ .hapusreseller
 📋 .listreseller
@@ -838,9 +824,14 @@ case 'menu': {
 🔑 Bisa Membuat Akun 6x
 📲 Hubungi no bot untuk daftar
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-${promoText}
+🔥 Promo Harga VPN Rp10.000 2 IP
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-${serverText}
+📜 Aturan:
+⚠️ Setiap kali membuat akun
+❌ Harus Sesuai format contoh
+❌ Jika lebih dari ketentuan:
+➡️ Reseller akan dicabut
+➡️ Akun dihapus tanpa notifikasi
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -848,29 +839,9 @@ ${serverText}
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
 
-  await sock.sendMessage(m.chat, { text: poter }, { quoted: m });
-}
-break;
-
-// ================== SETPROMO ==================
-case 'setpromo': {
-  if (!isOwner) return m.reply('❌ Hanya owner yang bisa set promo!');
-  const teks = m.text.split(' ').slice(1).join(' ');
-  if (!teks) return m.reply('⚠️ Contoh: .setpromo Promo VPN Rp5.000 All IP');
-
-  promoText = "🔥 " + teks;
-  m.reply(`✅ Promo berhasil diubah:\n${promoText}`);
-}
-break;
-
-// ================== SETSERVER ==================
-case 'setserver': {
-  if (!isOwner) return m.reply('❌ Hanya owner yang bisa set server!');
-  const teks = m.text.split(' ').slice(1).join(' ');
-  if (!teks) return m.reply('⚠️ Contoh: .setserver SG 🇸🇬 | ID 🇮🇩 | US 🇺🇸');
-
-  serverText = "📡 " + teks;
-  m.reply(`✅ Server berhasil diubah:\n${serverText}`);
+  await sock.sendMessage(m.chat, {
+    text: poter
+  }, { quoted: m });
 }
 break;
     //Mainmenu
@@ -1048,10 +1019,6 @@ case "sgwc": {
   }
 }
 break;
-// ===== VPN CONFIGURATION =====
-// ========================================
-// BAGIAN PEMBUATAN AKUN
-// ========================================
 case 'ssh':
 case 'vmess':
 case 'vless':
@@ -1280,7 +1247,7 @@ case 'ceklimit': {
 
         const config = JSON.parse(fs.readFileSync(file));
         let teks = `📊 *Daftar Limit Semua Reseller*\n\n`;
-        for (const [id, limit] of Object.entries(config.resellers)) {
+        for (const [id, limit] of Object.entries(config.resellers || {})) {
             const used = getLimit(id);
             teks += `👤 ${id}\n🔢 Limit: ${limit} akun (>1 hari)\n✅ Terpakai: ${used}\n🟢 Sisa: ${limit - used}\n\n`;
         }
