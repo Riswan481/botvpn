@@ -919,14 +919,20 @@ case "idws":
 case "idwc":
 case "sgws":
 case "sgwc": {
+  if (!isOwner) {
+    return reply("❌ Perintah ini hanya bisa digunakan oleh Owner!");
+  }
+
   if (!q) {
     return reply(`➡️ Masukkan domain\n👉 Contoh: .${command} bug.example.com`);
   }
 
   const domain = q.trim();
 
+  // Bedakan baseHost untuk ws & wc
   const isWC = command.endsWith("wc");
-  const baseHost = "violetvpn.biz.id";
+  const baseHost = isWC ? "wc.riswan.biz.id" : "violetvpn.biz.id";
+
   const hostAndSNI = isWC ? `${domain}.${baseHost}` : baseHost;
 
   const config = {
