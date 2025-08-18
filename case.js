@@ -657,22 +657,25 @@ ${chalk.cyan('🧩 Command  :')} ${chalk.redBright(command)}
     break    
 case 'allmenu':
 case 'ceratevpn': {
-  const moment = require('moment-timezone');
-  moment.locale('id');
+    const moment = require('moment-timezone');
+    moment.locale('id');
 
-  const uptime = () => {
-    let totalSeconds = parseInt(process.uptime());
-    let hours = Math.floor(totalSeconds / 3600);
-    let minutes = Math.floor((totalSeconds % 3600) / 60);
-    return `${hours} jam ${minutes} menit`;
-  };
+    // Fungsi untuk menghitung uptime bot
+    const uptime = () => {
+        let totalSeconds = parseInt(process.uptime());
+        let hours = Math.floor(totalSeconds / 3600);
+        let minutes = Math.floor((totalSeconds % 3600) / 60);
+        return `${hours} jam ${minutes} menit`;
+    };
 
-  const waktu = moment().tz('Asia/Jakarta');
-  const tanggal = waktu.format('LL');
-  const hari = waktu.format('dddd');
-  const jam = waktu.format('HH:mm') + ' WIB';
+    // Ambil waktu lokal Jakarta
+    const waktu = moment().tz('Asia/Jakarta');
+    const tanggal = waktu.format('LL');
+    const hari = waktu.format('dddd');
+    const jam = waktu.format('HH:mm') + ' WIB';
 
-  let teks = "```" + `
+    // Teks menu utama
+    let teks = `\`\`\`
 👥 WELCOME TO RISWAN STORE
 👋 Hai @${m.sender.replace(/[^0-9]/g, '')}
 📅 ${hari}, ${tanggal}
@@ -692,9 +695,9 @@ case 'ceratevpn': {
 ✦ .pointing        ➜ Add Domain
 ✦ .listdomain      ➜ List Domain
 ✦ .hapusdomain     ➜ Hapus Domain
-✦ .addsc           ➜ Tambah Script
-✦ .listsc          ➜ List Script
-✦ .getsc           ➜ Ambil Script
+✦ .addconfig       ➜ Tambah config
+✦ .listconfig      ➜ List config
+✦ .getconfig       ➜ Ambil config
 ✦ .addvps          ➜ Tambah VPS
 ✦ .hapusvps        ➜ Hapus VPS
 ✦ .listvps         ➜ Lihat VPS
@@ -713,28 +716,29 @@ case 'ceratevpn': {
 ✦ .ssh             ➜ Buat Akun 
 
 🎨 LAINNYA
-✦ .s     ➜ Buat Stiker
-✦ .hd    ➜ Gambar HD
+✦ .s               ➜ Buat Stiker
+✦ .hd              ➜ Gambar HD
 
 📣 PUSH MENU
-✦ .jpm         ➜ Push Pesan
-✦ .jpmhidetag  ➜ Push Tanpa Tag
-✦ .jpmfoto     ➜ Push Gambar
+✦ .jpm             ➜ Push Pesan
+✦ .jpmhidetag      ➜ Push Tanpa Tag
+✦ .jpmfoto         ➜ Push Gambar
 
 📡 CHANNEL
-✦ .cekidch  ➜ Cek ID Channel
-✦ .addch    ➜ Tambah Channel
-✦ .delch    ➜ Hapus Channel
-✦ .listch   ➜ List Channel
-✦ .jpmch    ➜ Push via Channel
+✦ .cekidch         ➜ Cek ID Channel
+✦ .addch           ➜ Tambah Channel
+✦ .delch           ➜ Hapus Channel
+✦ .listch          ➜ List Channel
+✦ .jpmch           ➜ Push via Channel
 
 📛 Riswan Bot © 2023
-` + "```";
+\`\`\``;
 
-  await sock.sendMessage(m.chat, {
-    text: teks,
-    mentions: [m.sender]
-  }, { quoted: m });
+    await sock.sendMessage(
+        m.chat, 
+        { text: teks, mentions: [m.sender] }, 
+        { quoted: m }
+    );
 }
 break;
 case 'menu': {
