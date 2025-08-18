@@ -920,7 +920,7 @@ case "idwc":
 case "sgws":
 case "sgwc": {
   if (!isOwner) {
-    return reply("❌ Perintah ini hanya bisa digunakan oleh Owner!");
+    return reply("❌ *Akses ditolak!!*");
   }
 
   if (!q) {
@@ -992,7 +992,7 @@ case 'shadowsocks': {
     const resellerId = m.sender.replace(/[^0-9]/g, '');
 
     if (!isOwner && !isReseller)
-        return m.reply('❌ *Fitur ini hanya untuk Owner atau Reseller*');
+        return m.reply('❌  *Akses ditolak!!*');
 
     if (isReseller && getLimit(resellerId) >= 6 )
         return m.reply('❌ *Limit reseller tercapai (maksimal 6 akun total) silahkan hubungi admin*');
