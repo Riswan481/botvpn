@@ -1363,20 +1363,22 @@ break;
     break       
     // Menampilkan daftar konfigurasi yang ada (untuk semua orang)
     case 'listconfig': {
-        const folder = './database/config'
-        if (!fs.existsSync(folder)) return m.reply('❌ Folder config belum ada.')
+    const folder = './database/config'
+    if (!fs.existsSync(folder)) return m.reply('❌ Folder config belum ada.')
 
-        const files = fs.readdirSync(folder)
-        if (files.length === 0) return m.reply('📁 Folder config kosong.')
+    const files = fs.readdirSync(folder)
+    if (files.length === 0) return m.reply('📁 Folder config kosong.')
 
-        let teks = `📜 *DAFTAR CONFIG (${files.length})*\n\n`
-        files.forEach((file, i) => {
-            teks += `${i + 1}. ${file}\n`
-        })
-        m.reply(teks)
-    }
-    break
+    let teks = `📜 *DAFTAR CONFIG (${files.length})*\n\n`
+    files.forEach((file, i) => {
+        teks += `${i + 1}. ${file}\n`
+    })
 
+    teks += `\n➡️ *Gunakan perintah .getconfig* <nomor>\n➡️ *untuk mengambil config.*\n➡️ *Contoh: .getconfig 1*`
+
+    m.reply(teks)
+}
+break
     // Mengambil dan mengirimkan konfigurasi berdasarkan nomor (untuk semua orang)
     case 'getconfig': {
         const folder = './database/config'
