@@ -45,6 +45,57 @@ let sshConfig = {
 if (fs.existsSync(vpsFile)) {
   sshConfig = JSON.parse(fs.readFileSync(vpsFile));
 }
+// =========================
+// FUNGSI LIMIT RESELLER
+// =========================
+function getResellerLimit(resellerId) {
+    try {
+        const file = './reseller_config.json';
+        if (!fs.existsSync(file)) {
+            fs.writeFileSync(file, JSON.stringify({ default: 6, resellers: {} }, null, 2));
+        }
+        const config = JSON.parse(fs.readFileSync(file));
+
+        if (resellerId && config.resellers[resellerId]) {
+            return config.resellers[resellerId];
+        }
+        return config.default; // fallback default
+    } catch (e) {
+        console.error('❌ Gagal baca config limit reseller:', e);
+        return 6; // fallback
+    }
+}
+
+function setResellerLimit(resellerId, limit) {
+    try {
+        const file = './reseller_config.json';
+        const config = fs.existsSync(file)
+            ? JSON.parse(fs.readFileSync(file))
+            : { default: 6, resellers: {} };
+
+        config.resellers[resellerId] = limit;
+        fs.writeFileSync(file, JSON.stringify(config, null, 2));
+        return true;
+    } catch (e) {
+        console.error('❌ Gagal set limit reseller:', e);
+        return false;
+    }
+}
+
+// Fungsi menghitung akun yang dipakai reseller (>1 hari)
+function getLimit(resellerId) {
+    try {
+        const dbFile = './reseller_accounts.json';
+        if (!fs.existsSync(dbFile)) return 0;
+
+        const accounts = JSON.parse(fs.readFileSync(dbFile));
+        return accounts.filter(acc => acc.owner === resellerId && acc.expiredDays > 1).length;
+    } catch (e) {
+        console.error('❌ Gagal hitung limit:', e);
+        return 0;
+    }
+}
+
 // ==============================================================
 const {
   exec,
@@ -737,15 +788,18 @@ case 'ceratevpn': {
   }, { quoted: m });
 }
 break;
+// =============== VARIABEL GLOBAL ===============
+let promoText = "🔥 Promo Harga VPN Rp10.000 2 IP";
+let serverText = "📡 Server Utama: SG, ID, US";
+
+// ================== MENU ==================
 case 'menu': {
-  // ambil uptime bot
   const uptime = process.uptime(); 
   const hours = Math.floor(uptime / 3600);
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
   const runtime = `${hours}j ${minutes}m ${seconds}d`;
 
-  // ambil jam sekarang
   const now = new Date();
   const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' };
   const jam = now.toLocaleTimeString('id-ID', options);
@@ -760,6 +814,7 @@ case 'menu': {
 
 📌 Format Perintah:
 🧩 .ssh risvpn 30 500 2
+➡️ Trial 1 hari untuk reseller
 👤 user → nama pengguna
 🗓️ 30   → masa aktif (hari)
 📦 500  → limit kuota (GB)
@@ -770,7 +825,11 @@ case 'menu': {
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
 🛠️ .addvps
+➡️ .setlimit
+➡️ .setserver
+➡️ .ceklimit
 👥 .addreseller
+➡️ .setpromo
 ♻️ .risetlimit
 🗑️ .hapusreseller
 📋 .listreseller
@@ -779,14 +838,9 @@ case 'menu': {
 🔑 Bisa Membuat Akun 6x
 📲 Hubungi no bot untuk daftar
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-🔥 Promo Harga VPN Rp10.000 2 IP
+${promoText}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-📜 Aturan:
-⚠️ Setiap kali membuat akun
-❌ Harus Sesuai format contoh
-❌ Jika lebih dari ketentuan:
-➡️ Reseller akan dicabut
-➡️ Akun dihapus tanpa notifikasi
+${serverText}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -794,9 +848,29 @@ case 'menu': {
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
 
-  await sock.sendMessage(m.chat, {
-    text: poter
-  }, { quoted: m });
+  await sock.sendMessage(m.chat, { text: poter }, { quoted: m });
+}
+break;
+
+// ================== SETPROMO ==================
+case 'setpromo': {
+  if (!isOwner) return m.reply('❌ Hanya owner yang bisa set promo!');
+  const teks = m.text.split(' ').slice(1).join(' ');
+  if (!teks) return m.reply('⚠️ Contoh: .setpromo Promo VPN Rp5.000 All IP');
+
+  promoText = "🔥 " + teks;
+  m.reply(`✅ Promo berhasil diubah:\n${promoText}`);
+}
+break;
+
+// ================== SETSERVER ==================
+case 'setserver': {
+  if (!isOwner) return m.reply('❌ Hanya owner yang bisa set server!');
+  const teks = m.text.split(' ').slice(1).join(' ');
+  if (!teks) return m.reply('⚠️ Contoh: .setserver SG 🇸🇬 | ID 🇮🇩 | US 🇺🇸');
+
+  serverText = "📡 " + teks;
+  m.reply(`✅ Server berhasil diubah:\n${serverText}`);
 }
 break;
     //Mainmenu
@@ -975,18 +1049,48 @@ case "sgwc": {
 }
 break;
 // ===== VPN CONFIGURATION =====
+// ========================================
+// BAGIAN PEMBUATAN AKUN
+// ========================================
 case 'ssh':
 case 'vmess':
 case 'vless':
 case 'trojan':
 case 'shadowsocks': {
 
-    // Fungsi hitung akun reseller
+    // ====== CONFIG LIMIT ======
+    function getResellerLimit() {
+        try {
+            const file = './reseller_config.json';
+            if (!fs.existsSync(file)) {
+                fs.writeFileSync(file, JSON.stringify({ limit: 6 }, null, 2));
+                return 6;
+            }
+            const config = JSON.parse(fs.readFileSync(file, 'utf-8'));
+            return config.limit || 6;
+        } catch (e) {
+            console.error("❌ Gagal baca reseller_config:", e);
+            return 6;
+        }
+    }
+
+    function setResellerLimit(newLimit) {
+        try {
+            fs.writeFileSync('./reseller_config.json', JSON.stringify({ limit: newLimit }, null, 2));
+            return true;
+        } catch (e) {
+            console.error("❌ Gagal simpan reseller_config:", e);
+            return false;
+        }
+    }
+
+    // ====== FUNGSI LIMIT AKUN ======
     function getLimit(resellerId) {
         try {
             const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
             const akun = JSON.parse(data);
-            return akun.filter(a => a.owner === resellerId).length;
+            // hanya hitung akun yang masa aktif > 1 hari
+            return akun.filter(a => a.owner === resellerId && a.expiredDays > 1).length;
         } catch (e) {
             console.error('❌ Gagal membaca database reseller:', e);
             return 0;
@@ -994,25 +1098,24 @@ case 'shadowsocks': {
     }
 
     // Fungsi simpan akun reseller ke database lokal
-    function saveResellerAccount({ username, owner, type }) {
+    function saveResellerAccount({ username, owner, type, expiredDays }) {
         try {
             const file = './reseller_accounts.json';
             const db = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : [];
-            db.push({ username, owner, type });
+            db.push({ username, owner, type, expiredDays });
             fs.writeFileSync(file, JSON.stringify(db, null, 2));
         } catch (e) {
             console.error('❌ Gagal simpan data reseller:', e);
         }
     }
 
+    // ====== CEK USER ======
     const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
     const resellerId = m.sender.replace(/[^0-9]/g, '');
+    const resellerLimit = getResellerLimit();
 
     if (!isOwner && !isReseller)
         return m.reply('❌ *Fitur ini hanya untuk Owner atau Reseller*');
-
-    if (isReseller && getLimit(resellerId) >= 6 )
-        return m.reply('❌ *Limit reseller tercapai (maksimal 6 akun total) silahkan hubungi admin*');
 
     const args = m.text.trim().split(/\s+/).slice(1);
     const usernameInput = args[0];
@@ -1032,8 +1135,13 @@ case 'shadowsocks': {
 🔢 *2* : max IP login`);
     }
 
-    if ((command !== 'ssh') && (isNaN(quotaGB) || quotaGB < 0 || maxIP <= 0)) {
-        return m.reply("❌ Kuota/IP tidak valid untuk VMess/VLESS/Trojan.");
+    // 🔒 Batasan reseller
+    if (isReseller && expiredDays > 30) {
+        return m.reply("❌ Reseller hanya bisa membuat akun maksimal 30 hari.");
+    }
+
+    if (isReseller && expiredDays > 1 && getLimit(resellerId) >= resellerLimit) {
+        return m.reply(`❌ Limit reseller tercapai (maksimal ${resellerLimit} akun aktif >1 hari). Silahkan hubungi admin.`);
     }
 
     react(); // Reaksi loading
@@ -1061,7 +1169,8 @@ case 'shadowsocks': {
                 saveResellerAccount({
                     username: usernameInput,
                     owner: resellerId,
-                    type: 'ssh'
+                    type: 'ssh',
+                    expiredDays
                 });
             }
 
@@ -1110,7 +1219,8 @@ case 'shadowsocks': {
                     saveResellerAccount({
                         username: usernameInput,
                         owner: resellerId,
-                        type: command
+                        type: command,
+                        expiredDays
                     });
                 }
 
@@ -1135,6 +1245,84 @@ ${message}*━━━━━━━━━━━━━━━━━━━━━━━
 }
 break;
 
+// ========================================
+// BAGIAN PENGATURAN LIMIT
+// ========================================
+// =========================
+// COMMAND HANDLER
+// =========================
+case 'setlimit': {
+    if (!isOwner) return m.reply("❌ Hanya Owner yang bisa mengubah limit reseller!");
+
+    const args = m.text.trim().split(/\s+/);
+    const targetId = args[1]?.replace(/[^0-9]/g, ''); 
+    const newLimit = parseInt(args[2]);
+
+    if (!targetId || isNaN(newLimit) || newLimit <= 0) {
+        return m.reply("⚠️ Format salah. Contoh:\n*👉 .setlimit 6281234567890 10*");
+    }
+
+    if (setResellerLimit(targetId, newLimit)) {
+        return m.reply(`✅ Limit reseller *${targetId}* berhasil diubah menjadi *${newLimit}* akun (>1 hari).`);
+    } else {
+        return m.reply("❌ Gagal mengubah limit reseller.");
+    }
+}
+break;
+
+case 'ceklimit': {
+    const args = m.text.trim().split(/\s+/);
+
+    // Owner cek semua reseller
+    if (isOwner && args[1] === 'all') {
+        const file = './reseller_config.json';
+        if (!fs.existsSync(file)) return m.reply("❌ Belum ada data reseller.");
+
+        const config = JSON.parse(fs.readFileSync(file));
+        let teks = `📊 *Daftar Limit Semua Reseller*\n\n`;
+        for (const [id, limit] of Object.entries(config.resellers)) {
+            const used = getLimit(id);
+            teks += `👤 ${id}\n🔢 Limit: ${limit} akun (>1 hari)\n✅ Terpakai: ${used}\n🟢 Sisa: ${limit - used}\n\n`;
+        }
+        return m.reply(teks.trim());
+    }
+
+    // Owner cek reseller tertentu
+    if (isOwner && args[1]) {
+        const targetId = args[1]?.replace(/[^0-9]/g, '');
+        if (!targetId) return m.reply("⚠️ Format salah. Contoh:\n*👉 .ceklimit 6281234567890*");
+
+        const limit = getResellerLimit(targetId);
+        const used = getLimit(targetId);
+        return m.reply(
+`📊 *Info Limit Reseller ${targetId}*
+🔢 Limit: ${limit} akun (>1 hari)
+✅ Terpakai: ${used}
+🟢 Sisa: ${limit - used}`
+        );
+    }
+
+    // Kalau Reseller cek sendiri
+    if (isReseller) {
+        const resellerId = m.sender.replace(/[^0-9]/g, '');
+        const limit = getResellerLimit(resellerId);
+        const used = getLimit(resellerId);
+        const remaining = limit - used;
+
+        return m.reply(
+`📊 *Info Limit Anda*
+👤 ID: ${resellerId}
+🔢 Limit: ${limit} akun (>1 hari)
+✅ Terpakai: ${used}
+🟢 Sisa: ${remaining}
+
+ℹ️ Akun 1 hari tidak dihitung limit.`
+        );
+    }
+
+    return m.reply("❌ Perintah ini hanya untuk Owner atau Reseller!");
+}
+break;
 case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
