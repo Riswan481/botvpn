@@ -763,7 +763,6 @@ case 'menu': {
 🔴 .trojan → user 30 500 2
 
 📌 Format Perintah:
-🧩 .ssh risvpn 30 500 2
 👤 user → nama pengguna
 🗓️ 30   → masa aktif (hari)
 📦 500  → limit kuota (GB)
