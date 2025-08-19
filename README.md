@@ -11,9 +11,15 @@ Langkah Instalasi
 ```bash
 rm -rf /root/botvpn && git clone https://github.com/Riswan481/botvpn.git /root/botvpn && cd /root/botvpn && npm install cheerio && npm install && node index.js
 ```
-2. pm2:
+2. Install pm2:
 ```bash
-npm install -g pm2 && pm2 start index.js --name botvpn && pm2 save && pm2 startup
+npm install -g pm2
+```
+3. Lanjutkan pm2
+```bash
+pm2 start index.js --name botvpn
+pm2 save
+pm2 startup
 ```
 
 Jika ingin menghapus bot dan foldernya, jalankan perintah berikut:
