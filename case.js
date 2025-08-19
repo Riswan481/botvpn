@@ -1373,12 +1373,12 @@ break;
     const files = fs.readdirSync(folder)
     if (files.length === 0) return m.reply('📁 Folder config kosong.')
 
-    let teks = `📜 *DAFTAR CONFIG (${files.length})*\n\n`
+    let teks = `📜 *DAFTAR CONFIG HC (${files.length})*\n\n`
     files.forEach((file, i) => {
-        teks += `${i + 1}. ${file}\n`
+        teks += `📶 *${i + 1}. ${file}*\n`
     })
 
-    teks += `\n➡️ *Gunakan perintah .getconfig* <nomor>\n➡️ *untuk mengambil config.*\n➡️ *Contoh: .getconfig 1*`
+    teks += `\n➡️ *Metode V2Ray\n➡️ *untuk mengambil config.*\n➡️ *Contoh: .getconfig 1*`
 
     m.reply(teks)
 }
