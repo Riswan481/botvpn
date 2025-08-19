@@ -1063,6 +1063,8 @@ case 'shadowsocks': {
 *==============================*
 ➡ *Format SSH:*  
 ${sshConfig.host}:443@${usernameInput}:${password}
+➡ *Format UDP:*  
+${sshConfig.host}:443@${usernameInput}:${password}
 *==============================*`
             );
         }
