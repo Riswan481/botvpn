@@ -1028,6 +1028,7 @@ case 'shadowsocks': {
     try {
         await ssh.connect(sshConfig);
 
+        // ================= SSH =================
         if (command === 'ssh') {
             const password = Math.random().toString(36).slice(-8);
             const expiredDate = moment().add(expiredDays, 'days').format('YYYY-MM-DD');
@@ -1042,7 +1043,6 @@ case 'shadowsocks': {
                 return m.reply("❌ Gagal membuat akun SSH.\n\n" + sshResult.stderr);
             }
 
-            // Simpan akun reseller
             if (isReseller) {
                 saveResellerAccount({
                     username: usernameInput,
@@ -1053,63 +1053,154 @@ case 'shadowsocks': {
 
             return m.reply(
 `✅ *Berhasil Membuat Akun SSH*
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-👤 Host: ${sshConfig.host}
-📛 Username: ${usernameInput}
-🔑 Password: ${password}
-📅 Expired: ${expiredDate}
-📶 IP Limit: ${maxIP}
-📊 Quota: ${quotaGB}GB
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-🌐 ${sshConfig.host}:443@${usernameInput}:${password}
-⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store*  t.me/JesVpnt
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`
+*==============================*
+👤 Username : ${usernameInput}
+🔑 Password : ${password}
+🌐 Host     : ${sshConfig.host}
+📅 Expired  : ${expiredDate}
+📶 IP Limit : ${maxIP}
+📊 Quota    : ${quotaGB} GB
+*==============================*
+➡ *Format SSH:*  
+${sshConfig.host}:443@${usernameInput}:${password}
+*==============================*`
             );
+        }
+
+        // ================= Selain SSH =================
+        let scriptPath = '';
+        if (command === 'vmess') scriptPath = '/etc/xray/add-vmess';
+        else if (command === 'vless') scriptPath = '/etc/xray/add-vless';
+        else if (command === 'trojan') scriptPath = '/etc/xray/add-trojan';
+        else if (command === 'shadowsocks') scriptPath = '/etc/xray/add-ss';
+
+        const execCmd = `${scriptPath} ${usernameInput} ${expiredDays} ${quotaGB} ${maxIP} ${bugDomain}`;
+        const result = await ssh.execCommand(execCmd);
+
+        if (result.stderr && !result.stdout.includes("SUCCESS")) {
+            console.error(`❌ SSH stderr for ${command}:`, result.stderr);
+            return m.reply(`❌ Gagal membuat akun ${command.toUpperCase()}.\n\n${result.stderr}`);
+        }
+
+        const outputLines = result.stdout.trim().split('\n');
+        const successIndex = outputLines.findIndex(line => line.includes("SUCCESS"));
+
+        if (successIndex !== -1) {
+            // parsing hasil script
+            let user, domain, quota, iplimit, uuid, exp;
+            let vmesslink1, vmesslink2, vmesslink3;
+            let vlesslink1, vlesslink2, vlesslink3;
+            let trojanlink1, trojanlink2;
+            let sslink;
+
+            for (let i = successIndex + 1; i < outputLines.length; i++) {
+                const line = outputLines[i].trim();
+                if (line.startsWith("Remarks:")) user = line.split(":")[1].trim();
+                if (line.startsWith("Domain:")) domain = line.split(":")[1].trim();
+                if (line.startsWith("User Quota:")) quota = line.split(":")[1].trim();
+                if (line.startsWith("User IP Limit:")) iplimit = line.split(":")[1].trim();
+                if (line.startsWith("UUID:")) uuid = line.split(":")[1].trim();
+                if (line.startsWith("Expired:")) exp = line.split(":")[1].trim();
+
+                if (line.startsWith("Link TLS:")) {
+                    if (command === 'vmess') vmesslink1 = line.split("Link TLS:")[1].trim();
+                    if (command === 'vless') vlesslink1 = line.split("Link TLS:")[1].trim();
+                    if (command === 'trojan') trojanlink1 = line.split("Link TLS:")[1].trim();
+                }
+                if (line.startsWith("Link none TLS:")) {
+                    if (command === 'vmess') vmesslink2 = line.split("Link none TLS:")[1].trim();
+                    if (command === 'vless') vlesslink2 = line.split("Link none TLS:")[1].trim();
+                }
+                if (line.startsWith("Link GRPC:")) {
+                    if (command === 'vmess') vmesslink3 = line.split("Link GRPC:")[1].trim();
+                    if (command === 'vless') vlesslink3 = line.split("Link GRPC:")[1].trim();
+                    if (command === 'trojan') trojanlink2 = line.split("Link GRPC:")[1].trim();
+                }
+                if (line.startsWith("SS Link:")) sslink = line.split("SS Link:")[1].trim();
+            }
+
+            // bikin template sesuai tipe akun
+            let message = '';
+            if (command === 'vmess') {
+                message = `
+✅ *Berhasil Membuat Akun VMESS*
+*==============================*
+👤 Remarks : ${user}
+🌐 Domain  : ${domain}
+📦 Quota   : ${quota}
+🔢 IP Limit: ${iplimit}
+📅 Expired : ${exp}
+*==============================*
+➡ *Link TLS*      
+\`\`\`${vmesslink1}\`\`\`
+
+➡ *Link NoneTLS*  
+\`\`\`${vmesslink2}\`\`\`
+
+➡ *Link gRPC*     
+\`\`\`${vmesslink3}\`\`\`
+*==============================*`;
+            } else if (command === 'vless') {
+                message = `
+✅ *Berhasil Membuat Akun VLESS*
+*==============================*
+👤 Remarks : ${user}
+🌐 Domain  : ${domain}
+📦 Quota   : ${quota}
+🔢 IP Limit: ${iplimit}
+📅 Expired : ${exp}
+*==============================*
+➡ *Link TLS*      
+\`\`\`${vlesslink1}\`\`\`
+
+➡ *Link NoneTLS*  
+\`\`\`${vlesslink2}\`\`\`
+
+➡ *Link gRPC*     
+\`\`\`${vlesslink3}\`\`\`
+*==============================*`;
+            } else if (command === 'trojan') {
+                message = `
+✅ *Berhasil Membuat Akun TROJAN*
+*==============================*
+👤 Remarks : ${user}
+🌐 Domain  : ${domain}
+📦 Quota   : ${quota}
+🔢 IP Limit: ${iplimit}
+📅 Expired : ${exp}
+*==============================*
+➡ *Link TLS*      
+\`\`\`${trojanlink1}\`\`\`
+
+➡ *Link gRPC*     
+\`\`\`${trojanlink2}\`\`\`
+*==============================*`;
+            } else if (command === 'shadowsocks') {
+                message = `
+✅ *Berhasil Membuat Akun SHADOWSOCKS*
+*==============================*
+👤 Remarks : ${user}
+🌐 Domain  : ${domain}
+📦 Quota   : ${quota}
+🔢 IP Limit: ${iplimit}
+📅 Expired : ${exp}
+*==============================*
+➡ *SS Link*      
+\`\`\`${sslink}\`\`\`
+*==============================*`;
+            }
+
+            if (isReseller) {
+                saveResellerAccount({
+                    username: usernameInput,
+                    owner: resellerId,
+                    type: command
+                });
+            }
+
+            return m.reply(message);
         } else {
-            let scriptPath = '';
-            if (command === 'vmess') scriptPath = '/etc/xray/add-vmess';
-            else if (command === 'vless') scriptPath = '/etc/xray/add-vless';
-            else if (command === 'trojan') scriptPath = '/etc/xray/add-trojan';
-            else if (command === 'shadowsocks') scriptPath = '/etc/xray/add-ss';
-
-            const execCmd = `${scriptPath} ${usernameInput} ${expiredDays} ${quotaGB} ${maxIP} ${bugDomain}`;
-            const result = await ssh.execCommand(execCmd);
-
-            if (result.stderr && !result.stdout.includes("SUCCESS")) {
-                console.error(`❌ SSH stderr for ${command}:`, result.stderr);
-                return m.reply(`❌ Gagal membuat akun ${command.toUpperCase()}.\n\n${result.stderr}`);
-            }
-
-            const outputLines = result.stdout.trim().split('\n');
-            const successIndex = outputLines.findIndex(line => line.includes("SUCCESS"));
-
-            if (successIndex !== -1) {
-                let message = '';
-                for (let i = successIndex + 1; i < outputLines.length; i++) {
-                    const line = outputLines[i].trim();
-                    if (line.includes(':')) message += `${line}\n`;
-                }
-
-                // Simpan akun reseller
-                if (isReseller) {
-                    saveResellerAccount({
-                        username: usernameInput,
-                        owner: resellerId,
-                        type: command
-                    });
-                }
-
-                return m.reply(
-`✅ *Berhasil Membuat Akun ${command.toUpperCase()}*
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-${message}*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*
-⚠️ *Gunakan akun ini dengan bijak.*
-👤 *Bot by Riswan Store* t.me/JesVpnt
-*━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━*`);
-            } else {
-                return m.reply(`❌ Output dari VPS tidak sesuai format.\n\n${result.stdout}`);
-            }
+            return m.reply(`❌ Output dari VPS tidak sesuai format.\n\n${result.stdout}`);
         }
 
     } catch (err) {
