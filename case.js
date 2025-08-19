@@ -1378,7 +1378,7 @@ break;
         teks += `📶 *${i + 1}. ${file}*\n`
     })
 
-    teks += `\n➡️ *Metode V2Ray*\n➡️ *untuk mengambil config.*\n➡️ *Contoh: .getconfig 1*`
+    teks += `\n➡️ *Config hc Metode V2Ray*\n➡️ *untuk mengambil config.*\n➡️ *Contoh: .getconfig 1*`
 
     m.reply(teks)
 }
