@@ -762,14 +762,23 @@ case 'menu': {
 🟣 .vmess   → user 30 500 2
 🔴 .trojan  → user 30 500 2
 
-🟢 .cekmember list user
 🟢 .trial untuk trial akun
-
 📌 Format Perintah:
 👤 user   → nama pengguna
 🗓️ 30     → masa aktif (hari)
 📦 500    → limit kuota (GB)
 🌐 2      → maksimal IP login
+━━━━━━━━━━━━━━━━━━━━━━
+🧭 Menu Tambahan:
+📚 .allmenu → lihat semua
+━━━━━━━━━━━━━━━━━━━━━━
+🔐 Admin Only:
+🛠️ .addvps
+👥 .addreseller
+♻️ .risetlimit
+🗑️ .hapusreseller
+📋 .listreseller
+🟢 .cekmember user akun
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
