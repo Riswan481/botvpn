@@ -757,17 +757,17 @@ case 'menu': {
   const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-🟢 .ssh     → user 30 500 2
-🔵 .vless   → user 30 500 2
-🟣 .vmess   → user 30 500 2
-🔴 .trojan  → user 30 500 2
+🟢 .ssh    → user 30 500 2
+🔵 .vless  → user 30 500 2
+🟣 .vmess  → user 30 500 2
+🔴 .trojan → user 30 500 2
 
 🟢 .trial untuk trial akun
 📌 Format Perintah:
-👤 user   → nama pengguna
-🗓️ 30     → masa aktif (hari)
-📦 500    → limit kuota (GB)
-🌐 2      → maksimal IP login
+👤 user → nama pengguna
+🗓️ 30   → masa aktif (hari)
+📦 500  → limit kuota (GB)
+🌐 2    → maksimal IP login
 ━━━━━━━━━━━━━━━━━━━━━━
 🧭 Menu Tambahan:
 📚 .allmenu → lihat semua
