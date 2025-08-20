@@ -779,7 +779,6 @@ case 'menu': {
 🗑️ .hapusreseller
 📋 .listreseller
 🟢 .cekmember 
-👥 .hapusakun
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -1418,47 +1417,6 @@ case 'cekss': {
 break;
 case 'cekmember': {
     m.reply('👥 *Gunakan contoh berikut*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n➡️ *.cekssh*');
-}
-break;
-case 'hapusakun': {
-    m.reply('👥 *Gunakan contoh berikut*\n➡️ *.hapusvmess*\n➡️ *.hapustrojan*\n➡️ *.hapusvless*\n➡️ *.hapusssh*');
-}
-break;
-// ===== HAPUS AKUN VPN =====
-// ===== HAPUS AKUN VPN =====
-case 'hapusssh':
-case 'hapusvmess':
-case 'hapusvless':
-case 'hapustrojan': {
-    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
-    if (!isOwner && !isReseller)
-        return m.reply('❌ *Akses ditolak!!*');
-
-    react();
-
-    const username = text.split(" ")[1];
-    if (!username) 
-        return m.reply(`⚠️ Masukkan username!\n\nContoh:\n${prefix + command} riswan`);
-
-    const ssh = new NodeSSH();
-    try {
-        await ssh.connect(sshConfig);
-
-        let scriptPath = '';
-        if (command === 'hapusssh') scriptPath = '/etc/xray/hapus-user-ssh';
-        else if (command === 'hapusvmess') scriptPath = '/etc/xray/hapus-user-vmess';
-        else if (command === 'hapusvless') scriptPath = '/etc/xray/hapus-user-vless';
-        else if (command === 'hapustrojan') scriptPath = '/etc/xray/hapus-user-trojan';
-
-        const result = await ssh.execCommand(`bash ${scriptPath} ${username}`);
-
-        return m.reply(result.stdout || result.stderr || "❌ Gagal hapus user!");
-    } catch (err) {
-        console.error("❌ SSH Error hapus akun:", err);
-        return m.reply(`❌ Gagal hapus akun:\n\n${err.message || err}`);
-    } finally {
-        if (ssh.isConnected()) ssh.dispose();
-    }
 }
 break;
 case 'addreseller': {
