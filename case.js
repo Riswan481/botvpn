@@ -755,19 +755,19 @@ case 'menu': {
   const jam = now.toLocaleTimeString('id-ID', options);
 
   const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
-✨PANEL BOT VPN PGETUNNEL
+✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 🟢 .trial
-🟢 .ssh    → user 30 500 2
-🔵 .vless  → user 30 500 2
-🟣 .vmess  → user 30 500 2
-🔴 .trojan → user 30 500 2
+🟢 .ssh     → user 30 500 2
+🔵 .vless   → user 30 500 2
+🟣 .vmess   → user 30 500 2
+🔴 .trojan  → user 30 500 2
 
 📌 Format Perintah:
-👤 user → nama pengguna
-🗓️ 30   → masa aktif (hari)
-📦 500  → limit kuota (GB)
-🌐 2    → maksimal IP login
+👤 user   → nama pengguna
+🗓️ 30     → masa aktif (hari)
+📦 500    → limit kuota (GB)
+🌐 2      → maksimal IP login
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -1054,19 +1054,19 @@ case 'shadowsocks': {
 
             return m.reply(
 `✅ *Berhasil Membuat Akun SSH*
-*==============================*
+*====================================*
 👤 Username : ${usernameInput}
 🔑 Password : ${password}
 🌐 Host     : ${sshConfig.host}
 📅 Expired  : ${expiredDate}
 📶 IP Limit : ${maxIP}
 📊 Quota    : ${quotaGB} GB
-*==============================*
+*====================================*
 ➡ *Format SSH:*  
 ${sshConfig.host}:443@${usernameInput}:${password}
 ➡ *Format UDP:*  
 ${sshConfig.host}:1-65535@${usernameInput}:${password}
-*==============================*`
+*====================================*`
             );
         }
 
@@ -1127,13 +1127,13 @@ ${sshConfig.host}:1-65535@${usernameInput}:${password}
             if (command === 'vmess') {
                 message = `
 ✅ *Berhasil Membuat Akun VMESS*
-*==============================*
+*====================================*
 👤 Remarks : ${user}
 🌐 Domain  : ${domain}
 📦 Quota   : ${quota}
 🔢 IP Limit: ${iplimit}
 📅 Expired : ${exp}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${vmesslink1}\`\`\`
 
@@ -1142,17 +1142,17 @@ ${sshConfig.host}:1-65535@${usernameInput}:${password}
 
 ➡ *Link gRPC*     
 \`\`\`${vmesslink3}\`\`\`
-*==============================*`;
+*====================================*`;
             } else if (command === 'vless') {
                 message = `
 ✅ *Berhasil Membuat Akun VLESS*
-*==============================*
+*====================================*
 👤 Remarks : ${user}
 🌐 Domain  : ${domain}
 📦 Quota   : ${quota}
 🔢 IP Limit: ${iplimit}
 📅 Expired : ${exp}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${vlesslink1}\`\`\`
 
@@ -1161,36 +1161,36 @@ ${sshConfig.host}:1-65535@${usernameInput}:${password}
 
 ➡ *Link gRPC*     
 \`\`\`${vlesslink3}\`\`\`
-*==============================*`;
+*====================================*`;
             } else if (command === 'trojan') {
                 message = `
 ✅ *Berhasil Membuat Akun TROJAN*
-*==============================*
+*====================================*
 👤 Remarks : ${user}
 🌐 Domain  : ${domain}
 📦 Quota   : ${quota}
 🔢 IP Limit: ${iplimit}
 📅 Expired : ${exp}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${trojanlink1}\`\`\`
 
 ➡ *Link gRPC*     
 \`\`\`${trojanlink2}\`\`\`
-*==============================*`;
+*====================================*`;
             } else if (command === 'shadowsocks') {
                 message = `
 ✅ *Berhasil Membuat Akun SHADOWSOCKS*
-*==============================*
+*====================================*
 👤 Remarks : ${user}
 🌐 Domain  : ${domain}
 📦 Quota   : ${quota}
 🔢 IP Limit: ${iplimit}
 📅 Expired : ${exp}
-*==============================*
+*====================================*
 ➡ *SS Link*      
 \`\`\`${sslink}\`\`\`
-*==============================*`;
+*====================================*`;
             }
 
             if (isReseller) {
@@ -1214,8 +1214,6 @@ ${sshConfig.host}:1-65535@${usernameInput}:${password}
     }
 }
 break;
-
-// ===== TRIAL ACCOUNT =====
 // ===== TRIAL ACCOUNT =====
 case 'trial': {
     const type = (m.text.split(/\s+/)[1] || '').toLowerCase();
@@ -1249,19 +1247,19 @@ case 'trial': {
 
             return m.reply(
 `✅ *Trial SSH 30 Menit*
-*==============================*
+*====================================*
 👤 Username : ${user}
 🔑 Password : ${password}
 🌐 Host     : ${sshConfig.host}
 📅 Expired  : ${expiredDate}
 📶 IP Limit : 1
 📊 Quota    : 0 GB
-*==============================*
+*====================================*
 ➡ *Format SSH:*  
-ssh://${user}:${password}@${sshConfig.host}:443
+${sshConfig.host}:443${user}:${password}
 ➡ *Format UDP:*  
-udp://${user}:${password}@${sshConfig.host}:1-65535
-*==============================*`
+${sshConfig.host}:1-65535${user}:${password}
+*====================================*`
             );
         }
 
@@ -1291,12 +1289,11 @@ udp://${user}:${password}@${sshConfig.host}:1-65535
         if(type === 'vmess') {
             message = `
 ✅ *Trial VMESS 30 Menit*
-*==============================*
+*====================================*
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
-🆔 UUID     : ${uuidOut}
 📅 Expired  : ${expOut}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
 
@@ -1305,16 +1302,15 @@ udp://${user}:${password}@${sshConfig.host}:1-65535
 
 ➡ *Link gRPC*     
 \`\`\`${linkGRPC}\`\`\`
-*==============================*`;
+*====================================*`;
         } else if(type === 'vless') {
             message = `
 ✅ *Trial VLESS 30 Menit*
-*==============================*
+*====================================*
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
-🆔 UUID     : ${uuidOut}
 📅 Expired  : ${expOut}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
 
@@ -1323,34 +1319,32 @@ udp://${user}:${password}@${sshConfig.host}:1-65535
 
 ➡ *Link gRPC*     
 \`\`\`${linkGRPC}\`\`\`
-*==============================*`;
+*====================================*`;
         } else if(type === 'trojan') {
             message = `
 ✅ *Trial TROJAN 30 Menit*
-*==============================*
+*====================================*
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
-🆔 UUID     : ${uuidOut}
 📅 Expired  : ${expOut}
-*==============================*
+*====================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
 
 ➡ *Link gRPC*     
 \`\`\`${linkGRPC}\`\`\`
-*==============================*`;
+*====================================*`;
         } else if(type === 'shadowsocks') {
             message = `
 ✅ *Trial SHADOWSOCKS 30 Menit*
-*==============================*
+*====================================*
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
-🆔 UUID     : ${uuidOut}
 📅 Expired  : ${expOut}
-*==============================*
+*====================================*
 ➡ *SS Link*      
 \`\`\`${sslink}\`\`\`
-*==============================*`;
+*====================================*`;
         }
 
         return m.reply(message);
