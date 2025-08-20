@@ -1216,6 +1216,7 @@ ${sshConfig.host}:1-65535@${usernameInput}:${password}
 break;
 
 // ===== TRIAL ACCOUNT =====
+// ===== TRIAL ACCOUNT =====
 case 'trial': {
     const type = (m.text.split(/\s+/)[1] || '').toLowerCase();
     if (!['ssh','vmess','vless','trojan','shadowsocks'].includes(type)) {
@@ -1238,7 +1239,7 @@ case 'trial': {
         const expiredDate = moment().add(30, 'minutes').format('YYYY-MM-DD HH:mm');
 
         // ===== SSH TRIAL =====
-        if (type === 'ssh') {
+        if(type === 'ssh') {
             const password = Math.random().toString(36).slice(-8);
             await ssh.execCommand(`
                 useradd -M -s /bin/false ${user} && \\
@@ -1264,84 +1265,103 @@ udp://${user}:${password}@${sshConfig.host}:1-65535
             );
         }
 
-        // ===== TRIAL VMESS/VLESS/TROJAN/SHADOWSOCKS =====
+        // ===== VMESS/VLESS/TROJAN/SHADOWSOCKS TRIAL =====
         let scriptTrial = '';
-        if (type === 'vmess') scriptTrial = '/etc/xray/add-vmess-trial';
-        if (type === 'vless') scriptTrial = '/etc/xray/add-vless-trial';
-        if (type === 'trojan') scriptTrial = '/etc/xray/add-trojan-trial';
-        if (type === 'shadowsocks') scriptTrial = '/etc/xray/add-ss-trial';
+        if(type === 'vmess') scriptTrial = '/etc/xray/add-vmess-trial';
+        if(type === 'vless') scriptTrial = '/etc/xray/add-vless-trial';
+        if(type === 'trojan') scriptTrial = '/etc/xray/add-trojan-trial';
+        if(type === 'shadowsocks') scriptTrial = '/etc/xray/add-ss-trial';
 
         const result = await ssh.execCommand(`${scriptTrial}`);
+        const stdout = result.stdout.trim();
 
-        // Fungsi ambil line berdasarkan label
-        const getLine = (label) => result.stdout.match(new RegExp(`${label}:\\s*(.*)`))?.[1] || 'N/A';
+        // Ambil data dari output script trial
+        const getLine = (label) => stdout.match(new RegExp(`${label}\\s*:\\s*(.*)`))?.[1] || 'N/A';
+
+        const userOut = getLine('User');
+        const domainOut = getLine('Domain');
+        const uuidOut = getLine('UUID');
+        const expOut = getLine('Expired');
+        const linkTLS = getLine('Link TLS');
+        const linkNTLS = getLine('Link NTLS');
+        const linkGRPC = getLine('Link GRPC');
+        const sslink = getLine('SS Link');
 
         let message = '';
-        const expireStr = moment().add(30, 'minutes').format('YYYY-MM-DD HH:mm');
-
         if(type === 'vmess') {
             message = `
 ✅ *Trial VMESS 30 Menit*
 *==============================*
-📅 Expired : ${expireStr}
+👤 User     : ${userOut}
+🌐 Domain   : ${domainOut}
+🆔 UUID     : ${uuidOut}
+📅 Expired  : ${expOut}
 *==============================*
 ➡ *Link TLS*      
-\`\`\`${getLine('Link TLS')}\`\`\`
+\`\`\`${linkTLS}\`\`\`
 
 ➡ *Link NoneTLS*  
-\`\`\`${getLine('Link none TLS')}\`\`\`
+\`\`\`${linkNTLS}\`\`\`
 
 ➡ *Link gRPC*     
-\`\`\`${getLine('Link GRPC')}\`\`\`
+\`\`\`${linkGRPC}\`\`\`
 *==============================*`;
         } else if(type === 'vless') {
             message = `
 ✅ *Trial VLESS 30 Menit*
 *==============================*
-📅 Expired : ${expireStr}
+👤 User     : ${userOut}
+🌐 Domain   : ${domainOut}
+🆔 UUID     : ${uuidOut}
+📅 Expired  : ${expOut}
 *==============================*
 ➡ *Link TLS*      
-\`\`\`${getLine('Link TLS')}\`\`\`
+\`\`\`${linkTLS}\`\`\`
 
 ➡ *Link NoneTLS*  
-\`\`\`${getLine('Link none TLS')}\`\`\`
+\`\`\`${linkNTLS}\`\`\`
 
 ➡ *Link gRPC*     
-\`\`\`${getLine('Link GRPC')}\`\`\`
+\`\`\`${linkGRPC}\`\`\`
 *==============================*`;
         } else if(type === 'trojan') {
             message = `
 ✅ *Trial TROJAN 30 Menit*
 *==============================*
-📅 Expired : ${expireStr}
+👤 User     : ${userOut}
+🌐 Domain   : ${domainOut}
+🆔 UUID     : ${uuidOut}
+📅 Expired  : ${expOut}
 *==============================*
 ➡ *Link TLS*      
-\`\`\`${getLine('Link TLS')}\`\`\`
+\`\`\`${linkTLS}\`\`\`
 
 ➡ *Link gRPC*     
-\`\`\`${getLine('Link GRPC')}\`\`\`
+\`\`\`${linkGRPC}\`\`\`
 *==============================*`;
         } else if(type === 'shadowsocks') {
             message = `
 ✅ *Trial SHADOWSOCKS 30 Menit*
 *==============================*
-📅 Expired : ${expireStr}
+👤 User     : ${userOut}
+🌐 Domain   : ${domainOut}
+🆔 UUID     : ${uuidOut}
+📅 Expired  : ${expOut}
 *==============================*
 ➡ *SS Link*      
-\`\`\`${getLine('SS Link')}\`\`\`
+\`\`\`${sslink}\`\`\`
 *==============================*`;
         }
 
         return m.reply(message);
 
-    } catch (err) {
+    } catch(err) {
         return m.reply(`❌ Gagal koneksi VPS atau eksekusi perintah:\n\n${err.message || err}`);
     } finally {
-        if (ssh.isConnected()) ssh.dispose();
+        if(ssh.isConnected()) ssh.dispose();
     }
 }
 break;
-
 case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
