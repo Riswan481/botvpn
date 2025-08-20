@@ -757,11 +757,13 @@ case 'menu': {
   const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-🟢 .trial
 🟢 .ssh     → user 30 500 2
 🔵 .vless   → user 30 500 2
 🟣 .vmess   → user 30 500 2
 🔴 .trojan  → user 30 500 2
+
+🟢 .cekmember list user
+🟢 .trial untuk trial akun
 
 📌 Format Perintah:
 👤 user   → nama pengguna
@@ -1393,10 +1395,7 @@ case 'cekss': {
         }
 
         return m.reply(
-`📋 *LIST USER ${command.replace('cek','').toUpperCase()}*
-━━━━━━━━━━━━━━━
-${result.stdout}
-━━━━━━━━━━━━━━━`
+`*${result.stdout}*`
         );
 
     } catch (err) {
@@ -1405,6 +1404,10 @@ ${result.stdout}
     } finally {
         if (ssh.isConnected()) ssh.dispose();
     }
+}
+break;
+case 'cekmember': {
+    m.reply('👥 *gunakan contoh*\n➡️*.cekvmess*\n➡️*.cektrojan*\n➡️*.cekvless*\n➡️*.cekssh*');
 }
 break;
 case 'addreseller': {
