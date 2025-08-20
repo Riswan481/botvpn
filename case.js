@@ -1416,14 +1416,7 @@ case 'cekss': {
 }
 break;
 case 'cekmember': {
-    m.reply('⚠️ Maaf, format salah. 
-Contoh benar: *👉 .cekvmess*
-
-📌 Pilihan tipe:
-- cekssh
-- cekvmess
-- cekvless
-- cektrojan');
+    m.reply('👥 *Gunakan contoh berikut*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n➡️ *.cekssh*');
 }
 break;
 case 'addreseller': {
