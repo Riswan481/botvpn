@@ -1063,9 +1063,9 @@ case 'shadowsocks': {
 📊 Quota    : ${quotaGB} GB
 *===================================*
 ➡ *Format SSH:*  
-👉 ${sshConfig.host}:443@${usernameInput}:${password}
+➡️ ${sshConfig.host}:443@${usernameInput}:${password}
 ➡ *Format UDP:*  
-👉 ${sshConfig.host}:1-65535@${usernameInput}:${password}
+➡️ ${sshConfig.host}:1-65535@${usernameInput}:${password}
 *===================================*`
             );
         }
@@ -1252,12 +1252,12 @@ case 'trial': {
 🌐 Host     : ${sshConfig.host}
 📅 Expired  : ${expiredDate}
 📶 IP Limit : 1
-📊 Quota    : 0 GB
+📊 Quota    : 1 GB
 *===================================*
 ➡ *Format SSH:*  
-👉 ${sshConfig.host}:443@${user}:${password}
+➡️ ${sshConfig.host}:443@${user}:${password}
 ➡ *Format UDP:*  
-👉 ${sshConfig.host}:1-65535@${user}:${password}
+➡️ ${sshConfig.host}:1-65535@${user}:${password}
 *===================================*`
             );
         }
@@ -1292,6 +1292,8 @@ case 'trial': {
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
 📅 Expired  : ${expOut}
+📶 IP Limit : 1
+📊 Quota    : 1 GB
 *===================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
@@ -1309,6 +1311,8 @@ case 'trial': {
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
 📅 Expired  : ${expOut}
+📶 IP Limit : 1
+📊 Quota    : 1 GB
 *===================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
@@ -1326,6 +1330,8 @@ case 'trial': {
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
 📅 Expired  : ${expOut}
+📶 IP Limit : 1
+📊 Quota    : 1 GB
 *===================================*
 ➡ *Link TLS*      
 \`\`\`${linkTLS}\`\`\`
@@ -1340,6 +1346,8 @@ case 'trial': {
 👤 User     : ${userOut}
 🌐 Domain   : ${domainOut}
 📅 Expired  : ${expOut}
+📶 IP Limit : 1
+📊 Quota    : 1 GB
 *===================================*
 ➡ *SS Link*      
 \`\`\`${sslink}\`\`\`
@@ -1352,6 +1360,50 @@ case 'trial': {
         return m.reply(`❌ Gagal koneksi VPS atau eksekusi perintah:\n\n${err.message || err}`);
     } finally {
         if(ssh.isConnected()) ssh.dispose();
+    }
+}
+break;
+// ===== CEK AKUN VPN =====
+case 'cekssh':
+case 'cekvmess':
+case 'cekvless':
+case 'cektrojan':
+case 'cekss': {
+    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
+    if (!isOwner && !isReseller)
+        return m.reply('❌ *Akses ditolak!!*');
+
+    react(); // animasi loading
+
+    const ssh = new NodeSSH();
+    try {
+        await ssh.connect(sshConfig);
+
+        let scriptPath = '';
+        if (command === 'cekssh') scriptPath = '/etc/xray/cek-ssh';
+        else if (command === 'cekvmess') scriptPath = '/etc/xray/cek-vmess';
+        else if (command === 'cekvless') scriptPath = '/etc/xray/cek-vless';
+        else if (command === 'cektrojan') scriptPath = '/etc/xray/cek-trojan';
+        else if (command === 'cekss') scriptPath = '/etc/xray/cek-ss';
+
+        const result = await ssh.execCommand(`bash ${scriptPath}`);
+
+        if (!result.stdout.trim()) {
+            return m.reply(`⚠️ Tidak ada user ${command.replace('cek','').toUpperCase()} ditemukan.`);
+        }
+
+        return m.reply(
+`📋 *LIST USER ${command.replace('cek','').toUpperCase()}*
+━━━━━━━━━━━━━━━
+${result.stdout}
+━━━━━━━━━━━━━━━`
+        );
+
+    } catch (err) {
+        console.error("❌ SSH Error cek akun:", err);
+        return m.reply(`❌ Gagal cek akun:\n\n${err.message || err}`);
+    } finally {
+        if (ssh.isConnected()) ssh.dispose();
     }
 }
 break;
