@@ -1407,7 +1407,7 @@ case 'cekss': {
 }
 break;
 case 'cekmember': {
-    m.reply('👥 *gunakan contoh*\n➡️*.cekvmess*\n➡️*.cektrojan*\n➡️*.cekvless*\n➡️*.cekssh*');
+    m.reply('👥 *gunakan contoh*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n ➡️*.cekssh*');
 }
 break;
 case 'addreseller': {
