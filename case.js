@@ -1395,7 +1395,7 @@ case 'cekss': {
         }
 
         return m.reply(
-`*${result.stdout}*`
+`${result.stdout}`
         );
 
     } catch (err) {
