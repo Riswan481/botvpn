@@ -1425,6 +1425,7 @@ case 'hapusakun': {
 }
 break;
 // ===== HAPUS AKUN VPN =====
+// ===== HAPUS AKUN VPN =====
 case 'hapusssh':
 case 'hapusvmess':
 case 'hapusvless':
@@ -1434,6 +1435,10 @@ case 'hapustrojan': {
         return m.reply('❌ *Akses ditolak!!*');
 
     react();
+
+    const username = text.split(" ")[1];
+    if (!username) 
+        return m.reply(`⚠️ Masukkan username!\n\nContoh:\n${prefix + command} riswan`);
 
     const ssh = new NodeSSH();
     try {
@@ -1445,9 +1450,9 @@ case 'hapustrojan': {
         else if (command === 'hapusvless') scriptPath = '/etc/xray/hapus-user-vless';
         else if (command === 'hapustrojan') scriptPath = '/etc/xray/hapus-user-trojan';
 
-        const result = await ssh.execCommand(`bash ${scriptPath}`);
+        const result = await ssh.execCommand(`bash ${scriptPath} ${username}`);
 
-        return m.reply(result.stdout || result.stderr || "❌ Gagal hapus user");
+        return m.reply(result.stdout || result.stderr || "❌ Gagal hapus user!");
     } catch (err) {
         console.error("❌ SSH Error hapus akun:", err);
         return m.reply(`❌ Gagal hapus akun:\n\n${err.message || err}`);
