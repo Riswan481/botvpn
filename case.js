@@ -1225,8 +1225,7 @@ case 'trial': {
 - ssh
 - vmess
 - vless
-- trojan
-- shadowsocks`);
+- trojan`);
     }
 
     react(); // animasi loading
