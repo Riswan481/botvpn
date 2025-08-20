@@ -1419,6 +1419,38 @@ case 'cekmember': {
     m.reply('👥 *Gunakan contoh berikut*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n➡️ *.cekssh*');
 }
 break;
+// ===== HAPUS AKUN VPN =====
+case 'hapusssh':
+case 'hapusvmess':
+case 'hapusvless':
+case 'hapustrojan': {
+    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
+    if (!isOwner && !isReseller)
+        return m.reply('❌ *Akses ditolak!!*');
+
+    react();
+
+    const ssh = new NodeSSH();
+    try {
+        await ssh.connect(sshConfig);
+
+        let scriptPath = '';
+        if (command === 'hapusssh') scriptPath = '/etc/xray/hapus-user-ssh';
+        else if (command === 'hapusvmess') scriptPath = '/etc/xray/hapus-user-vmess';
+        else if (command === 'hapusvless') scriptPath = '/etc/xray/hapus-user-vless';
+        else if (command === 'hapustrojan') scriptPath = '/etc/xray/hapus-user-trojan';
+
+        const result = await ssh.execCommand(`bash ${scriptPath}`);
+
+        return m.reply(result.stdout || result.stderr || "❌ Gagal hapus user");
+    } catch (err) {
+        console.error("❌ SSH Error hapus akun:", err);
+        return m.reply(`❌ Gagal hapus akun:\n\n${err.message || err}`);
+    } finally {
+        if (ssh.isConnected()) ssh.dispose();
+    }
+}
+break;
 case 'addreseller': {
   if (!isOwner) return m.reply('❌ Hanya Owner yang bisa menambahkan reseller!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
