@@ -768,17 +768,18 @@ case 'menu': {
 🗓️ 30   → masa aktif (hari)
 📦 500  → limit kuota (GB)
 🌐 2    → maksimal IP login
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━
 🧭 Menu Tambahan:
 📚 .allmenu → lihat semua
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
 🛠️ .addvps
 👥 .addreseller
 ♻️ .risetlimit
 🗑️ .hapusreseller
 📋 .listreseller
-🟢 .cekmember user akun
+🟢 .cekmember 
+👥 .hapusakun
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -1417,6 +1418,10 @@ case 'cekss': {
 break;
 case 'cekmember': {
     m.reply('👥 *Gunakan contoh berikut*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n➡️ *.cekssh*');
+}
+break;
+case 'hapusakun': {
+    m.reply('👥 *Gunakan contoh berikut*\n➡️ *.hapusvmess*\n➡️ *.hapustrojan*\n➡️ *.hapusvless*\n➡️ *.hapusssh*');
 }
 break;
 // ===== HAPUS AKUN VPN =====
