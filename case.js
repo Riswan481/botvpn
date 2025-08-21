@@ -1049,15 +1049,30 @@ if (isReseller && getLimit(resellerId) >= resellerLimit)
     return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
-    const usernameInput = args[0];
-    const expiredDays = parseInt(args[1]);
-    const quotaGB = parseInt(args[2]) || 0;
-    const maxIP = parseInt(args[3]) || 1;
-    const bugDomain = args[4] || 'quiz.vidio.com';
+const usernameInput = args[0];  // username tetap wajib
 
-    if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
-        return m.reply(`⚠️ Format salah. Contoh:
-*👉 .${command} user 30 500 2*
+if (!usernameInput) {
+    return m.reply(`⚠️ Username wajib diisi!\n\n
+📌 Contoh:
+- Reseller: .${command} riswan
+- Admin   : .${command} riswan 60 1000 5 bug.com`);
+}
+
+let expiredDays, quotaGB, maxIP, bugDomain;
+
+if (isReseller) {
+    // reseller otomatis
+    expiredDays = 30;             // fix 30 hari
+    quotaGB = 500;                // fix 500 GB
+    maxIP = 2;                    // fix 2 IP
+    bugDomain = 'quiz.vidio.com'; // default bug
+} else {
+    // admin/owner bisa manual
+    expiredDays = parseInt(args[1]);
+    quotaGB = parseInt(args[2]) || 0;
+    maxIP = parseInt(args[3]) || 1;
+    bugDomain = args[4] || 'quiz.vidio.com';
+}
 
 📌 Keterangan:
 👤 *user* : nama pengguna  
