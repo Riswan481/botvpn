@@ -788,17 +788,49 @@ case 'menu': {
   const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-💻 .ssh     → user 30 500 2
-🌐 .vless   → user 30 500 2
-🔗 .vmess   → user 30 500 2
-🛡️ .trojan  → user 30 500 2
+💻 .ssh    → user 30 500 2
+🌐 .vless  → user 30 500 2
+🔗 .vmess  → user 30 500 2
+🛡️ .trojan → user 30 500 2
 
-🎁 .trial   → trial akun
+🎁 .trial  → trial akun
 📌 Format Perintah:
-👤 user  → nama pengguna
-📅 30    → masa aktif (hari)
-📦 500   → limit kuota (GB)
-🔢 2     → maksimal IP login
+👤 user → nama pengguna
+📅 30   → masa aktif (hari)
+📦 500  → limit kuota (GB)
+🔢 2    → maksimal IP login
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ HARGA LAYANAN AKUN VPN 
+↪️ KUSUS JADI RESELLER
+
+💻 SSH   → Rp 5.000 / 30 hari
+🌐 VLESS → Rp 5.000 / 30 hari
+🔗 VMESS → Rp 5.000 / 30 hari
+🛡️ TROJAN→ Rp 5.000 / 30 hari
+
+📦 Quota 500 GB / IP login 2
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ HARGA LAYANAN AKUN VPN 
+↪️ KUSUS MEMBER
+
+💻 SSH   → Rp 8.000 / 30 hari
+🌐 VLESS → Rp 8.000 / 30 hari
+🔗 VMESS → Rp 8.000 / 30 hari
+🛡️ TROJAN→ Rp 8.000 / 30 hari
+
+📦 Quota 500 GB  / IP login 2
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ SEWA SCRIPT PGETUNNEL
+📅 1 BULAN → Rp 10.000
+📅 2 BULAN → Rp 18.000
+📅 3 BULAN → Rp 25.000
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ TEMBAK PAKET XL VIDIO
+💰 Harga Paket 40.000 
+📌 Terima jadi + Config
+━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ INFORMASI SERVER
+🌏 Lokasi Server : Indonesia
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 📂 Menu Tambahan:
 📖 .allmenu → lihat semua
@@ -816,6 +848,7 @@ case 'menu': {
 🕒 Jam    : ${jam}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 by © Riswan Store 2023
+👥 Owner: 085888801241
 ━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
   await sock.sendMessage(m.chat, {
     text: poter
