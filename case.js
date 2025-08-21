@@ -812,7 +812,6 @@ case 'menu': {
 🗑️ .hapusreseller
 📋 .listreseller
 🔓 .setlimit
-👥 .ceklimit
 🟢 .cekmember 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
@@ -1049,26 +1048,21 @@ case 'shadowsocks': {
         return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
-    const usernameInput = args[0];  // username tetap wajib
+    const usernameInput = args[0];
+    const expiredDays = parseInt(args[1]);
+    const quotaGB = parseInt(args[2]) || 0;
+    const maxIP = parseInt(args[3]) || 1;
+    const bugDomain = args[4] || 'quiz.vidio.com';
 
-    if (!usernameInput) {
-        return m.reply(`⚠️ Username wajib diisi!\n\n📌 Contoh:\n- Reseller: .${command} riswan\n- Admin   : .${command} riswan 60 1000 5 bug.com`);
-    }
+    if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
+        return m.reply(`⚠️ Format salah. Contoh:
+*👉 .${command} user 30 500 2*
 
-    let expiredDays, quotaGB, maxIP, bugDomain;
-
-    if (isReseller) {
-        // reseller otomatis
-        expiredDays = 30;             // fix 30 hari
-        quotaGB = 500;                // fix 500 GB
-        maxIP = 2;                    // fix 2 IP
-        bugDomain = 'quiz.vidio.com'; // default bug
-    } else {
-        // admin/owner bisa manual
-        expiredDays = parseInt(args[1]);
-        quotaGB = parseInt(args[2]) || 0;
-        maxIP = parseInt(args[3]) || 1;
-        bugDomain = args[4] || 'quiz.vidio.com';
+📌 Keterangan:
+👤 *user* : nama pengguna  
+⏳ *30* : masa aktif (hari)  
+📦 *500* : kuota (GB)  
+🔢 *2* : max IP login`);
     }
 
     if ((command !== 'ssh') && (isNaN(quotaGB) || quotaGB < 0 || maxIP <= 0)) {
@@ -1541,58 +1535,6 @@ case 'risetlimit': {
     console.error('❌ Gagal reset reseller:', e);
     return m.reply('❌ Terjadi kesalahan saat reset reseller.');
   }
-}
-break;
-case 'ceklimit': {
-    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
-    const resellerId = m.sender.replace(/[^0-9]/g, '');
-
-    if (!isOwner && !isReseller)
-        return m.reply("❌ *Akses ditolak!!*");
-
-    let target = resellerId;
-
-    // Kalau admin bisa cek nomor lain
-    const args = m.text.trim().split(/\s+/).slice(1);
-    if (isOwner && args[0]) {
-        target = args[0].replace(/[^0-9]/g, '');
-    }
-
-    // --- fungsi ambil limit ---
-    function getResellerLimit(id) {
-        try {
-            const data = fs.readFileSync('./reseller_limits.json', 'utf-8');
-            const db = JSON.parse(data);
-            return db[id] || 0; // default 0 kalau belum diset
-        } catch {
-            return 0;
-        }
-    }
-
-    // --- fungsi hitung akun reseller ---
-    function getLimit(id) {
-        try {
-            const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
-            const akun = JSON.parse(data);
-            return akun.filter(a => a.owner === id).length;
-        } catch {
-            return 0;
-        }
-    }
-
-    const limit = getResellerLimit(target);
-    const used = getLimit(target);
-    const remaining = limit - used;
-
-    return m.reply(
-`📊 *INFO LIMIT RESELLER*
-=======================
-📱 Nomor   : ${target}
-🔢 Dipakai : ${used} akun
-💾 Limit   : ${limit} akun
-✅ Sisa    : ${remaining} akun
-=======================`
-    );
 }
 break;
 case 'listreseller': {
