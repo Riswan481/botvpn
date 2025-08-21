@@ -788,36 +788,35 @@ case 'menu': {
   const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-🟢 .ssh    → user 30 500 2
-🔵 .vless  → user 30 500 2
-🟣 .vmess  → user 30 500 2
-🔴 .trojan → user 30 500 2
+💻 .ssh     → user 30 500 2
+🌐 .vless   → user 30 500 2
+🔗 .vmess   → user 30 500 2
+🛡️ .trojan  → user 30 500 2
 
-🟢 .trial untuk trial akun
+🎁 .trial   → trial akun
 📌 Format Perintah:
-👤 user → nama pengguna
-🗓️ 30   → masa aktif (hari)
-📦 500  → limit kuota (GB)
-🌐 2    → maksimal IP login
+👤 user  → nama pengguna
+📅 30    → masa aktif (hari)
+📦 500   → limit kuota (GB)
+🔢 2     → maksimal IP login
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-🧭 Menu Tambahan:
-📚 .allmenu → lihat semua
+📂 Menu Tambahan:
+📖 .allmenu → lihat semua
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 🔐 Admin Only:
-🛠️ .addvps
-👥 .addreseller
+➕ .addvps
+⚙️ .setlimit 
 ♻️ .risetlimit
-🗑️ .hapusreseller
 📋 .listreseller
-🔓 .setlimit
-🟢 .cekmember 
+➕ .addreseller
+👥 .cekmember 
+❌ .hapusreseller
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
-
   await sock.sendMessage(m.chat, {
     text: poter
   }, { quoted: m });
@@ -1046,14 +1045,15 @@ if (isReseller && getLimit(resellerId) >= resellerLimit)
     return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
-    const usernameInput = args[0];
-    const expiredDays = parseInt(args[1]);
-    const quotaGB = parseInt(args[2]) || 0;
-    const maxIP = parseInt(args[3]) || 1;
-    const bugDomain = args[4] || 'quiz.vidio.com';
+const usernameInput = args[0];
+let expiredDays = parseInt(args[1]);
+let quotaGB = parseInt(args[2]) || 0;
+let maxIP = parseInt(args[3]) || 1;
+const bugDomain = args[4] || 'quiz.vidio.com';
 
-    if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
-        return m.reply(`⚠️ Format salah. Contoh:
+// ===== Validasi input =====
+if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
+    return m.reply(`⚠️ Format salah. Contoh:
 *👉 .${command} user 30 500 2*
 
 📌 Keterangan:
@@ -1061,7 +1061,14 @@ if (isReseller && getLimit(resellerId) >= resellerLimit)
 ⏳ *30* : masa aktif (hari)  
 📦 *500* : kuota (GB)  
 🔢 *2* : max IP login`);
-    }
+}
+
+// ===== Khusus reseller (paksa setting) =====
+if (isReseller) {
+    expiredDays = 30;   // masa aktif fix 30 hari
+    quotaGB = 500;      // kuota fix 500 GB
+    maxIP = 2;          // limit IP fix 2
+}
 
     if ((command !== 'ssh') && (isNaN(quotaGB) || quotaGB < 0 || maxIP <= 0)) {
         return m.reply("❌ Kuota/IP tidak valid untuk VMess/VLESS/Trojan.");
