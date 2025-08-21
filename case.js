@@ -109,6 +109,39 @@ function loadResellers() {
     return [];
   }
 }
+// ====== TAMBAHAN FUNCTION UNTUK LIMIT ======
+
+// ambil limit reseller
+function getResellerLimit(resellerId) {
+    try {
+        const file = './reseller_limits.json';
+        if (!fs.existsSync(file)) return 6; // default limit 6
+        const db = JSON.parse(fs.readFileSync(file));
+        const data = db.find(r => r.reseller === resellerId);
+        return data ? data.limit : 6;
+    } catch (e) {
+        console.error("❌ Gagal membaca limit reseller:", e);
+        return 6;
+    }
+}
+
+// simpan limit reseller
+function setResellerLimit(resellerId, limit) {
+    try {
+        const file = './reseller_limits.json';
+        const db = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : [];
+        const index = db.findIndex(r => r.reseller === resellerId);
+
+        if (index !== -1) db[index].limit = limit;
+        else db.push({ reseller: resellerId, limit });
+
+        fs.writeFileSync(file, JSON.stringify(db, null, 2));
+        return true;
+    } catch (e) {
+        console.error("❌ Gagal simpan limit reseller:", e);
+        return false;
+    }
+}
 // === END: Penambahan dan Konfigurasi SSH ===
 
 module.exports = sock = async (sock, m, chatUpdate, mek, store) => {
@@ -778,6 +811,7 @@ case 'menu': {
 ♻️ .risetlimit
 🗑️ .hapusreseller
 📋 .listreseller
+🔓 .setlimit
 🟢 .cekmember 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
@@ -1009,8 +1043,9 @@ case 'shadowsocks': {
     if (!isOwner && !isReseller)
         return m.reply('❌  *Akses ditolak!!*');
 
-    if (isReseller && getLimit(resellerId) >= 6 )
-        return m.reply('❌ *Limit reseller tercapai (maksimal 6 akun total) silahkan hubungi admin*');
+    const resellerLimit = getResellerLimit(resellerId);
+if (isReseller && getLimit(resellerId) >= resellerLimit)
+    return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
     const usernameInput = args[0];
@@ -1430,6 +1465,27 @@ case 'addreseller': {
   list.push(target);
   fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
   return m.reply(`✅ Berhasil menambahkan reseller:\n${target}`);
+}
+break;
+case 'setlimit': {
+    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
+    const resellerId = m.sender.replace(/[^0-9]/g, '');
+
+    if (!isOwner && !isReseller)
+        return m.reply("❌ *Akses ditolak!!*");
+
+    const args = m.text.trim().split(/\s+/).slice(1);
+    const newLimit = parseInt(args[0]);
+
+    if (isNaN(newLimit) || newLimit <= 0) {
+        return m.reply("⚠️ Format salah.\nContoh: *.setlimit 10*");
+    }
+
+    if (setResellerLimit(resellerId, newLimit)) {
+        return m.reply(`✅ Limit akun reseller berhasil diubah menjadi *${newLimit} akun*`);
+    } else {
+        return m.reply("❌ Gagal menyimpan limit reseller.");
+    }
 }
 break;
 case 'hapusreseller': {
