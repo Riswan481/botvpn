@@ -1065,9 +1065,17 @@ if (!usernameInput || isNaN(expiredDays) || expiredDays <= 0) {
 
 // ===== Khusus reseller (paksa setting) =====
 if (isReseller) {
-    expiredDays = 30;   // masa aktif fix 30 hari
-    quotaGB = 500;      // kuota fix 500 GB
-    maxIP = 2;          // limit IP fix 2
+    if (expiredDays !== 30 || quotaGB !== 500 || maxIP !== 2) {
+        m.reply(`⚠️ Reseller tidak bisa ubah setting! 
+👉 Masa aktif otomatis *30 hari*
+👉 Kuota otomatis *500 GB*
+👉 Max IP otomatis *2*`);
+    }
+
+    // paksa nilai tetap
+    expiredDays = 30;
+    quotaGB = 500;
+    maxIP = 2;
 }
 
     if ((command !== 'ssh') && (isNaN(quotaGB) || quotaGB < 0 || maxIP <= 0)) {
@@ -1502,7 +1510,8 @@ case 'setlimit': {
     }
 
     if (setResellerLimit(targetNumber, newLimit)) {
-        return m.reply(`✅ Limit untuk nomor *${targetNumber}* berhasil diubah menjadi *${newLimit} akun*`);
+        return m.reply(`✅ Limit untuk nomor *${targetNumber}* 
+✅ berhasil diubah menjadi *${newLimit} akun*`);
     } else {
         return m.reply("❌ Gagal menyimpan limit reseller.");
     }
