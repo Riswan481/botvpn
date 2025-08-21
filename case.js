@@ -754,33 +754,7 @@ case 'menu': {
   const options = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit' };
   const jam = now.toLocaleTimeString('id-ID', options);
 
-  // hitung total akun
-  let totalSSH = 0, totalVmess = 0, totalVless = 0, totalTrojan = 0;
-  try {
-    // SSH
-    const sshData = fs.readFileSync("/etc/xray/ssh.txt", "utf-8");
-    totalSSH = (sshData.match(/^###/gm) || []).length;
-
-    // VMESS / VLESS / TROJAN dari config.json
-    const vmessData = fs.readFileSync("/etc/xray/config.json", "utf-8");
-    totalVmess  = (vmessData.match(/^### vmess/gm)  || []).length;
-    totalVless  = (vmessData.match(/^### vless/gm)  || []).length;
-    totalTrojan = (vmessData.match(/^### trojan/gm) || []).length;
-  } catch (e) {
-    console.log("❌ Gagal membaca file akun:", e.message);
-  }
-
-  const totalAll = totalSSH + totalVmess + totalVless + totalTrojan;
-
-  // ambil region & city
-  try {
-    const res = await fetch("https://ipapi.co/json/");
-    const data = await res.json();
-    const region = data.region || "Unknown";
-    const city = data.city || "Unknown";
-    const country = data.country_name || "Unknown";
-
-    const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
+  const poter = "```" + `━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ PANEL BOT VPN PGETUNNEL
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 🟢 .ssh    → user 30 500 2
@@ -806,26 +780,15 @@ case 'menu': {
 📋 .listreseller
 🟢 .cekmember 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 Statistik Akun:
-🔐 SSH     : ${totalSSH}
-🟣 Vmess   : ${totalVmess}
-🔵 Vless   : ${totalVless}
-🔴 Trojan  : ${totalTrojan}
-━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 Total Akun: ${totalAll}
-━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
-🌍 Region : ${region}
-🏙️ City   : ${city}, ${country}
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 by © Riswan Store 2023
 ━━━━━━━━━━━━━━━━━━━━━━━━━` + "```";
 
-    await sock.sendMessage(m.chat, { text: poter }, { quoted: m });
-  } catch (e) {
-    await sock.sendMessage(m.chat, { text: "❌ Gagal mengambil data lokasi" }, { quoted: m });
-  }
+  await sock.sendMessage(m.chat, {
+    text: poter
+  }, { quoted: m });
 }
 break;
     //Mainmenu
