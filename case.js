@@ -109,8 +109,6 @@ function loadResellers() {
     return [];
   }
 }
-// ====== TAMBAHAN FUNCTION UNTUK LIMIT ======
-
 // ambil limit reseller
 function getResellerLimit(resellerId) {
     try {
@@ -1044,8 +1042,8 @@ case 'shadowsocks': {
         return m.reply('❌  *Akses ditolak!!*');
 
     const resellerLimit = getResellerLimit(resellerId);
-    if (isReseller && getLimit(resellerId) >= resellerLimit)
-        return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
+if (isReseller && getLimit(resellerId) >= resellerLimit)
+    return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
     const usernameInput = args[0];
@@ -1074,6 +1072,7 @@ case 'shadowsocks': {
     const ssh = new NodeSSH();
     try {
         await ssh.connect(sshConfig);
+
         // ================= SSH =================
         if (command === 'ssh') {
             const password = Math.random().toString(36).slice(-8);
@@ -1466,6 +1465,20 @@ case 'addreseller': {
   return m.reply(`✅ Berhasil menambahkan reseller:\n${target}`);
 }
 break;
+case 'hapusreseller': {
+  if (!isOwner) return m.reply('❌ Hanya Owner!');
+  const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
+  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.hapusreseller 6281234567890*');
+
+  let list = loadResellers();
+  if (!list.includes(target)) return m.reply('❌ Nomor bukan reseller.');
+
+  list = list.filter(id => id !== target);
+  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
+  resetLimit(target);
+  return m.reply(`✅ Reseller ${target} berhasil dihapus.`);
+}
+break;
 case 'setlimit': {
     if (!isOwner) return m.reply("❌ *Hanya Admin yang bisa set limit!*");
 
@@ -1488,21 +1501,6 @@ case 'setlimit': {
     }
 }
 break;
-case 'hapusreseller': {
-  if (!isOwner) return m.reply('❌ Hanya Owner!');
-  const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
-  if (!target) return m.reply('⚠️ Format salah!\nContoh: *.hapusreseller 6281234567890*');
-
-  let list = loadResellers();
-  if (!list.includes(target)) return m.reply('❌ Nomor bukan reseller.');
-
-  list = list.filter(id => id !== target);
-  fs.writeFileSync('./resellers.json', JSON.stringify(list, null, 2));
-  resetLimit(target);
-  return m.reply(`✅ Reseller ${target} berhasil dihapus.`);
-}
-break;
-
 case 'risetlimit': {
   if (!isOwner) return m.reply('❌ Hanya Owner!');
   const target = m.text.split(' ')[1]?.replace(/[^0-9]/g, '');
