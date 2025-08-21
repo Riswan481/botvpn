@@ -812,6 +812,7 @@ case 'menu': {
 🗑️ .hapusreseller
 📋 .listreseller
 🔓 .setlimit
+👥 .ceklimit
 🟢 .cekmember 
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
@@ -1468,21 +1469,22 @@ case 'addreseller': {
 }
 break;
 case 'setlimit': {
-    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
-    const resellerId = m.sender.replace(/[^0-9]/g, '');
-
-    if (!isOwner && !isReseller)
-        return m.reply("❌ *Akses ditolak!!*");
+    if (!isOwner) return m.reply("❌ *Hanya Admin yang bisa set limit!*");
 
     const args = m.text.trim().split(/\s+/).slice(1);
-    const newLimit = parseInt(args[0]);
-
-    if (isNaN(newLimit) || newLimit <= 0) {
-        return m.reply("⚠️ Format salah.\nContoh: *.setlimit 10*");
+    if (args.length < 2) {
+        return m.reply("⚠️ Format salah.\nContoh: *.setlimit 6281234567890 15*");
     }
 
-    if (setResellerLimit(resellerId, newLimit)) {
-        return m.reply(`✅ Limit akun reseller berhasil diubah menjadi *${newLimit} akun*`);
+    const targetNumber = args[0].replace(/[^0-9]/g, '');
+    const newLimit = parseInt(args[1]);
+
+    if (!targetNumber || isNaN(newLimit) || newLimit <= 0) {
+        return m.reply("⚠️ Format salah.\nContoh: *.setlimit 6281234567890 15*");
+    }
+
+    if (setResellerLimit(targetNumber, newLimit)) {
+        return m.reply(`✅ Limit untuk nomor *${targetNumber}* berhasil diubah menjadi *${newLimit} akun*`);
     } else {
         return m.reply("❌ Gagal menyimpan limit reseller.");
     }
@@ -1535,6 +1537,36 @@ case 'risetlimit': {
     console.error('❌ Gagal reset reseller:', e);
     return m.reply('❌ Terjadi kesalahan saat reset reseller.');
   }
+}
+break;
+case 'ceklimit': {
+    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
+    const resellerId = m.sender.replace(/[^0-9]/g, '');
+
+    if (!isOwner && !isReseller)
+        return m.reply("❌ *Akses ditolak!!*");
+
+    let target = resellerId;
+
+    // kalau admin bisa cek nomor lain
+    const args = m.text.trim().split(/\s+/).slice(1);
+    if (isOwner && args[0]) {
+        target = args[0].replace(/[^0-9]/g, '');
+    }
+
+    const limit = getResellerLimit(target);
+    const used = getLimit(target);
+    const remaining = limit - used;
+
+    return m.reply(
+`📊 *INFO LIMIT RESELLER*
+=======================
+📱 Nomor   : ${target}
+🔢 Dipakai : ${used} akun
+💾 Limit   : ${limit} akun
+✅ Sisa    : ${remaining} akun
+=======================`
+    );
 }
 break;
 case 'listreseller': {
