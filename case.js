@@ -1045,40 +1045,30 @@ case 'shadowsocks': {
         return m.reply('❌  *Akses ditolak!!*');
 
     const resellerLimit = getResellerLimit(resellerId);
-if (isReseller && getLimit(resellerId) >= resellerLimit)
-    return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
+    if (isReseller && getLimit(resellerId) >= resellerLimit)
+        return m.reply(`❌ *Limit reseller tercapai (maksimal ${resellerLimit} akun total) silahkan hubungi admin*`);
 
     const args = m.text.trim().split(/\s+/).slice(1);
-const usernameInput = args[0];  // username tetap wajib
+    const usernameInput = args[0];  // username tetap wajib
 
-if (!usernameInput) {
-    return m.reply(`⚠️ Username wajib diisi!\n\n
-📌 Contoh:
-- Reseller: .${command} riswan
-- Admin   : .${command} riswan 60 1000 5 bug.com`);
-}
+    if (!usernameInput) {
+        return m.reply(`⚠️ Username wajib diisi!\n\n📌 Contoh:\n- Reseller: .${command} riswan\n- Admin   : .${command} riswan 60 1000 5 bug.com`);
+    }
 
-let expiredDays, quotaGB, maxIP, bugDomain;
+    let expiredDays, quotaGB, maxIP, bugDomain;
 
-if (isReseller) {
-    // reseller otomatis
-    expiredDays = 30;             // fix 30 hari
-    quotaGB = 500;                // fix 500 GB
-    maxIP = 2;                    // fix 2 IP
-    bugDomain = 'quiz.vidio.com'; // default bug
-} else {
-    // admin/owner bisa manual
-    expiredDays = parseInt(args[1]);
-    quotaGB = parseInt(args[2]) || 0;
-    maxIP = parseInt(args[3]) || 1;
-    bugDomain = args[4] || 'quiz.vidio.com';
-}
-
-📌 Keterangan:
-👤 *user* : nama pengguna  
-⏳ *30* : masa aktif (hari)  
-📦 *500* : kuota (GB)  
-🔢 *2* : max IP login`);
+    if (isReseller) {
+        // reseller otomatis
+        expiredDays = 30;             // fix 30 hari
+        quotaGB = 500;                // fix 500 GB
+        maxIP = 2;                    // fix 2 IP
+        bugDomain = 'quiz.vidio.com'; // default bug
+    } else {
+        // admin/owner bisa manual
+        expiredDays = parseInt(args[1]);
+        quotaGB = parseInt(args[2]) || 0;
+        maxIP = parseInt(args[3]) || 1;
+        bugDomain = args[4] || 'quiz.vidio.com';
     }
 
     if ((command !== 'ssh') && (isNaN(quotaGB) || quotaGB < 0 || maxIP <= 0)) {
@@ -1090,7 +1080,6 @@ if (isReseller) {
     const ssh = new NodeSSH();
     try {
         await ssh.connect(sshConfig);
-
         // ================= SSH =================
         if (command === 'ssh') {
             const password = Math.random().toString(36).slice(-8);
@@ -1563,10 +1552,32 @@ case 'ceklimit': {
 
     let target = resellerId;
 
-    // kalau admin bisa cek nomor lain
+    // Kalau admin bisa cek nomor lain
     const args = m.text.trim().split(/\s+/).slice(1);
     if (isOwner && args[0]) {
         target = args[0].replace(/[^0-9]/g, '');
+    }
+
+    // --- fungsi ambil limit ---
+    function getResellerLimit(id) {
+        try {
+            const data = fs.readFileSync('./reseller_limits.json', 'utf-8');
+            const db = JSON.parse(data);
+            return db[id] || 0; // default 0 kalau belum diset
+        } catch {
+            return 0;
+        }
+    }
+
+    // --- fungsi hitung akun reseller ---
+    function getLimit(id) {
+        try {
+            const data = fs.readFileSync('./reseller_accounts.json', 'utf-8');
+            const akun = JSON.parse(data);
+            return akun.filter(a => a.owner === id).length;
+        } catch {
+            return 0;
+        }
     }
 
     const limit = getResellerLimit(target);
