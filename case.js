@@ -843,6 +843,7 @@ case 'menu': {
 ➕ .addreseller
 👥 .cekmember 
 ❌ .hapusreseller
+❌ .hapusakun
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
@@ -1010,13 +1011,13 @@ case "sgwc": {
 
   // Bedakan baseHost untuk ws & wc
   const isWC = command.endsWith("wc");
-  const baseHost = isWC ? "wc.riswan.biz.id" : "violetvpn.biz.id";
+  const baseHost = isWC ? "joss.krikkrik.tech" : "joss.krikkrik.tech";
 
   const hostAndSNI = isWC ? `${domain}.${baseHost}` : baseHost;
 
   const config = {
     domain: domain,
-    path: command.startsWith("id") ? "/id-amz" : "/sg-melbi",
+    path: command.startsWith("id") ? "/Free-VPN-CF-Geo-Project/ID1" : "/Free-VPN-CF-Geo-Project/SG1",
     port: 443,
     tls: "tls",
     sni: hostAndSNI,
@@ -1484,8 +1485,14 @@ case 'cekss': {
             return m.reply(`⚠️ Tidak ada user ${command.replace('cek','').toUpperCase()} ditemukan.`);
         }
 
+        // Hitung total user
+        const lines = result.stdout.trim().split('\n');
+        const totalUser = lines.length;
+
         return m.reply(
-`${result.stdout}`
+`${result.stdout}
+
+📊 Total User: ${totalUser}`
         );
 
     } catch (err) {
@@ -1496,8 +1503,56 @@ case 'cekss': {
     }
 }
 break;
+
+// ===== HAPUS AKUN VPN =====
+case 'hapusssh':
+case 'hapusvmess':
+case 'hapusvless':
+case 'hapustrojan':
+case 'hapusss': {
+    const isReseller = loadResellers().includes(m.sender.replace(/[^0-9]/g, ''));
+    if (!isOwner && !isReseller)
+        return m.reply('❌ *Akses ditolak!!*');
+
+    if (!args[0]) return m.reply('❌ Masukkan username yang ingin dihapus.');
+
+    const username = args[0];
+
+    react(); // animasi loading
+
+    const ssh = new NodeSSH();
+    try {
+        await ssh.connect(sshConfig);
+
+        let scriptPath = '';
+        if (command === 'hapusssh') scriptPath = '/etc/xray/hapus-ssh';
+        else if (command === 'hapusvmess') scriptPath = '/etc/xray/hapus-vmess';
+        else if (command === 'hapusvless') scriptPath = '/etc/xray/hapus-vless';
+        else if (command === 'hapustrojan') scriptPath = '/etc/xray/hapus-trojan';
+        else if (command === 'hapusss') scriptPath = '/etc/xray/hapus-ss';
+
+        const result = await ssh.execCommand(`bash ${scriptPath} ${username}`);
+
+        // Hitung jumlah user yang dihapus (1 user per eksekusi)
+        const totalDeleted = result.stdout.trim() ? 1 : 0;
+
+        return m.reply(`${result.stdout || '✅ User berhasil dihapus.'}
+📊 Total User Dihapus: ${totalDeleted}`);
+
+    } catch (err) {
+        console.error("❌ SSH Error hapus akun:", err);
+        return m.reply(`❌ Gagal hapus akun:\n\n${err.message || err}`);
+    } finally {
+        if (ssh.isConnected()) ssh.dispose();
+    }
+}
+break;
 case 'cekmember': {
     m.reply('👥 *Gunakan contoh berikut*\n➡️ *.cekvmess*\n➡️ *.cektrojan*\n➡️ *.cekvless*\n➡️ *.cekssh*');
+}
+break;
+case 'hapusakun': {
+    m.reply('👥 *Gunakan contoh berikut untuk menghapus akun*\n➡️ *.hapusvmess*\n➡️ *.hapustrojan*\n➡️ *.hapusvless*\n➡️ *.hapusssh*');
 }
 break;
 case 'addreseller': {
