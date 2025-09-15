@@ -844,6 +844,7 @@ case 'menu': {
 👥 .cekmember 
 ❌ .hapusreseller
 ❌ .hapusakun
+❌ .hapusakun
 ━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏳ Uptime : ${runtime}
 🕒 Jam    : ${jam}
